@@ -1,0 +1,29 @@
+# Kiirmärkme seadistus — näidis.
+# Rakendus loob sellise faili esmakäivitusel: exe kõrvale (portatiivne) või %APPDATA%\Kiirmarge\.
+# Seda faili kirjutatakse uuesti ainult siis, kui muudad seadeid rakenduses.
+# Kiirmärkme seadistus
+# Muuda väärtusi vabalt — rakendus loeb seda igal käivitusel.
+# Kui muudad seadeid rakenduses, kirjutatakse see fail uuesti (kommentaarid säilivad).
+
+[general]
+mode = "standalone"        # "standalone" | "obsidian"
+theme = "dark"             # "dark" | "light" | "system"
+always_on_top = true
+autostart = false          # true = käivita Windowsi sisselogimisel
+
+[storage]
+vault = ""                 # obsidian-režiimis vaulti juurkaust
+notes_dir = "Kiirmärkmed"
+attachments_dir = "Kiirmärkmed/manused"
+default_to_desktop = false
+link_style = "auto"        # "auto" | "wiki" (![[..]]) | "markdown"
+filename_format = "YYYY-MM-DD-HHmmss.md"
+datetime_format = "YYYY-MM-DD HH:mm"
+note_mode = "per-note"     # "per-note" = iga märge eraldi, "single-file" = kõik ühte
+single_file = "Kiirmärkmed.md"  # liitfaili nimi, kui note_mode = "single-file"
+
+[hotkeys]
+open = "Ctrl+Shift+~"
+save = "Enter"
+close = "Esc"
+screenshot = ""            # tühi = välja lülitatud

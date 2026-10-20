@@ -1,0 +1,13 @@
+# Sõltuvused ja ehitustulemused
+node_modules/
+dist/
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/
+
+# Masinapõhine: lühike target-kaust (Windowsi pika tee tõttu). Vt README.
+apps/desktop/src-tauri/.cargo/
+
+# Tööriistade ja agentide ajutised failid
+.zwork/
+*.log
+*.tmp

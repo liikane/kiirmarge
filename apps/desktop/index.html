@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="et">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kiirmärge</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <main class="note">
+      <header class="note__header">
+        <h1 class="note__title">Kiirmärge</h1>
+        <div class="note__meta">
+          <span class="note__hint" id="hotkey-hint" aria-label="Kiirklahv"></span>
+          <button id="toggle-settings" class="btn btn--icon" type="button" aria-label="Seaded" title="Seaded">⚙</button>
+        </div>
+      </header>
+
+      <section id="settings" class="settings" aria-label="Seaded" hidden>
+        <div class="settings__row">
+          <label class="settings__label" for="mode">Režiim</label>
+          <select id="mode" class="input">
+            <option value="standalone">Eraldiseisev (Dokumendid/töölaud)</option>
+            <option value="obsidian">Obsidiani vault</option>
+          </select>
+        </div>
+
+        <div class="settings__row" id="vault-row" hidden>
+          <label class="settings__label" for="vault">Obsidiani vault</label>
+          <div class="settings__inline">
+            <select id="vault" class="input"></select>
+            <button id="pick-vault" class="btn" type="button">Vali…</button>
+          </div>
+          <p class="settings__hint">Märkmed lähevad vaulti alamkausta; „Märkmete kaust“ on vaulti suhtes.</p>
+        </div>
+
+        <div class="settings__row">
+          <label class="settings__label" for="notes-dir">Märkmete kaust</label>
+          <div class="settings__inline">
+            <input id="notes-dir" class="input" type="text" spellcheck="false" />
+            <button id="pick-dir" class="btn" type="button">Vali…</button>
+          </div>
+        </div>
+
+        <div class="settings__row">
+          <label class="settings__label" for="note-mode">Salvestamise viis</label>
+          <select id="note-mode" class="input">
+            <option value="per-note">Üks fail iga märkme kohta</option>
+            <option value="single-file">Kõik märkmed ühes failis</option>
+          </select>
+        </div>
+
+        <div class="settings__row" id="single-file-row" hidden>
+          <label class="settings__label" for="single-file">Liitfaili nimi</label>
+          <input id="single-file" class="input" type="text" spellcheck="false" />
+        </div>
+
+        <div class="settings__row">
+          <label class="settings__label" for="link-style">Lingistiil</label>
+          <select id="link-style" class="input">
+            <option value="auto">Automaatne (Obsidiani režiimis wiki)</option>
+            <option value="wiki">Wiki ([[link]])</option>
+            <option value="markdown">Markdown ([nimi](tee))</option>
+          </select>
+        </div>
+
+        <div class="settings__row">
+          <label class="settings__label" for="hotkey-open">Kiirklahv akna avamiseks (globaalne)</label>
+          <input id="hotkey-open" class="input" type="text" spellcheck="false" />
+        </div>
+
+        <div class="settings__row">
+          <label class="settings__label" for="hotkey-save">Salvestamise klahv</label>
+          <input id="hotkey-save" class="input" type="text" spellcheck="false" />
+        </div>
+
+        <div class="settings__row">
+          <label class="settings__label" for="hotkey-close">Sulgemise klahv</label>
+          <input id="hotkey-close" class="input" type="text" spellcheck="false" />
+        </div>
+
+        <label class="settings__check">
+          <input id="autostart" type="checkbox" />
+          Käivita arvuti käivitamisel
+        </label>
+
+        <div class="settings__actions">
+          <button id="save-settings" class="btn btn--primary" type="button">Salvesta seaded</button>
+        </div>
+      </section>
+
+      <textarea
+        id="draft"
+        class="note__input"
+        placeholder="Kirjuta märge… (Enter salvestab, Ctrl+Enter uus rida)"
+        spellcheck="false"
+        autofocus
+      ></textarea>
+
+      <div class="note__actions">
+        <button id="save" class="btn btn--primary" type="button">Salvesta</button>
+        <button id="cancel" class="btn" type="button">Tühista</button>
+      </div>
+
+      <p id="notice" class="note__notice" role="alert" hidden></p>
+      <p id="status" class="note__status" role="status" aria-live="polite"></p>
+      <ul id="problems" class="note__problems" aria-label="Seadistuse probleemid" hidden></ul>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "@kiirmarge/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Kiirmärkme jagatav põhiloogika (platvormist sõltumatu)",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "node --test \"src/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "smol-toml": "^1.9.1"
+  }
+}
