@@ -45,7 +45,7 @@ npm run tauri --workspace @kiirmarge/desktop -- build --debug --no-bundle
 ## Testid
 
 ```powershell
-npm test                # core: 57 testi (node --test)
+npm test                # core: 67 testi (node --test)
 npm run typecheck       # core + desktop (tsc --noEmit)
 cd apps/desktop/src-tauri; cargo test   # 6 testi (Rust: failiteed, liitfail)
 ```
