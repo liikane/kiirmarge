@@ -38,6 +38,8 @@ export {
 export type { Hotkey, KeyEventLike } from "./hotkey/parse.ts";
 export { buildFilename, formatDateTime, withCounter } from "./note/filename.ts";
 export { composeNoteAppend, composeNoteMarkdown } from "./note/markdown.ts";
+export { continueChecklist, insertCheckbox, isChecklistLine } from "./note/checklist.ts";
+export type { TextEdit } from "./note/checklist.ts";
 export { markdownLink, resolveLinkStyle, wikiEmbed, wikiLink } from "./note/links.ts";
 export { baseName, isAbsolutePath, joinPath, resolveNotesDir } from "./paths/resolve.ts";
 export type { BasePaths } from "./paths/resolve.ts";

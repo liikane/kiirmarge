@@ -3,9 +3,11 @@ import { register, unregisterAll } from "@tauri-apps/plugin-global-shortcut";
 
 import {
   cloneConfig,
+  continueChecklist,
   discardNote,
   hotkeyFieldError,
   hotkeyMatches,
+  insertCheckbox,
   isAbsolutePath,
   loadConfig,
   parseHotkey,
@@ -58,6 +60,7 @@ const hotkeySaveInput = must<HTMLInputElement>("#hotkey-save");
 const hotkeyCloseInput = must<HTMLInputElement>("#hotkey-close");
 const autostartCheckbox = must<HTMLInputElement>("#autostart");
 const saveSettingsButton = must<HTMLButtonElement>("#save-settings");
+const checkboxButton = must<HTMLButtonElement>("#checkbox");
 const modeSelect = must<HTMLSelectElement>("#mode");
 const vaultRow = must<HTMLElement>("#vault-row");
 const vaultSelect = must<HTMLSelectElement>("#vault");
@@ -408,10 +411,30 @@ cancelButton.addEventListener("click", () => {
   handleCancel();
 });
 
-/** Ctrl+Enter lisab tekstialasse reavahetuse (Enter salvestab). */
+/** Rakendab core'ist tulnud tekstimuudatuse tekstialale. */
+function applyTextEdit(edit: { text: string; start: number; end: number }): void {
+  draftInput.value = edit.text;
+  draftInput.setSelectionRange(edit.start, edit.end);
+  draftInput.focus();
+}
+
+checkboxButton.addEventListener("click", () => {
+  const start = draftInput.selectionStart ?? draftInput.value.length;
+  const end = draftInput.selectionEnd ?? start;
+  applyTextEdit(insertCheckbox(draftInput.value, start, end));
+});
+
+/** Ctrl+Enter lisab reavahetuse; märkeruudu real jätkab loendit. */
 function insertNewline(): void {
   const start = draftInput.selectionStart ?? draftInput.value.length;
   const end = draftInput.selectionEnd ?? start;
+  if (start === end) {
+    const continued = continueChecklist(draftInput.value, start);
+    if (continued !== null) {
+      applyTextEdit(continued);
+      return;
+    }
+  }
   const value = draftInput.value;
   draftInput.value = `${value.slice(0, start)}\n${value.slice(end)}`;
   const caret = start + 1;

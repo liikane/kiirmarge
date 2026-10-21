@@ -47,7 +47,9 @@ Kui tahad väiksemat ja kiiremat exet, mille võib vabalt mujale kopeerida, tee 
 1. Rakendus käivitub **peidetud aknaga**, registreerib globaalse kiirklahvi **Ctrl+Shift+~** ja lisab
    **salve ikooni** (Windows 11 peidab uue ikooni esialgu ülevoolualasse — „Show hidden icons").
 2. Kiirklahv või salve ikooni klõps näitab akent; fookus läheb kohe tekstialale.
-3. **Enter** või nupp „Salvesta" kirjutab märkme faili; **Ctrl+Enter** lisab reavahetuse.
+3. **Enter** või nupp „Salvesta" kirjutab märkme faili; **Ctrl+Enter** lisab reavahetuse
+   (märkeruudu real jätkab loendit uue `- [ ] `-ga). Nupp **☑** lisab kursorile
+   Markdowni märkeruudu (`- [ ] `) — Obsidiani ülesannete jaoks.
    **Esc** peidab akna (mustand jääb alles). Nupp „Tühista" tühjendab mustandi.
 4. **Sulgenupp (X) ei lõpeta rakendust** — aken peidetakse, rakendus jääb salve ikoonile.
    Lõpetamiseks: paremklõps salve ikoonil → **Välju**.

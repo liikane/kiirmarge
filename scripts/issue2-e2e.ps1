@@ -1,0 +1,93 @@
+﻿$ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName UIAutomationClient
+Add-Type -AssemblyName UIAutomationTypes
+
+$AE = [System.Windows.Automation.AutomationElement]
+$TS = [System.Windows.Automation.TreeScope]
+$CT = [System.Windows.Automation.ControlType]
+
+function Fail($message) { Write-Output "FAIL: $message"; exit 1 }
+function Info($message) { Write-Output $message }
+
+$running = Get-Process -Name 'Kiirmärge' -ErrorAction SilentlyContinue
+if ($running) { Fail "Kiirmärge.exe juba töötab (pid $($running.Id -join ', '))" }
+
+$root = Join-Path ([System.IO.Path]::GetTempPath()) 'KiirmargeIssue2'
+if (Test-Path $root) { Remove-Item $root -Recurse -Force }
+New-Item -ItemType Directory -Path $root | Out-Null
+$notes = Join-Path $root 'Notes'
+New-Item -ItemType Directory -Path $notes | Out-Null
+$exe = Join-Path $root 'kiirmarge.exe'
+Copy-Item 'C:\kt\memilla\debug\kiirmarge.exe' $exe
+
+$notesToml = $notes.Replace('\', '\\')
+$lines = @(
+  '[general]',
+  'mode = "standalone"',
+  'theme = "dark"',
+  'always_on_top = false',
+  'autostart = false',
+  '',
+  '[storage]',
+  ('notes_dir = "' + $notesToml + '"'),
+  '',
+  '[hotkeys]',
+  'open = "Ctrl+Alt+F12"',
+  'save = "Enter"',
+  'close = "Esc"',
+  'screenshot = ""'
+)
+[System.IO.File]::WriteAllText((Join-Path $root 'config.toml'), ($lines -join "`r`n"), (New-Object System.Text.UTF8Encoding($false)))
+
+$first = Start-Process -FilePath $exe -PassThru
+Start-Sleep -Seconds 4
+if ($first.HasExited) { Fail "protsess lõpetas kohe (exit $($first.ExitCode))" }
+Start-Process -FilePath $exe -PassThru | Out-Null
+Start-Sleep -Seconds 3
+
+$deadline = (Get-Date).AddSeconds(10)
+$win = $null
+while ((Get-Date) -lt $deadline -and $null -eq $win) {
+  $win = $AE::RootElement.FindFirst($TS::Children, (New-Object System.Windows.Automation.PropertyCondition($AE::NameProperty, 'Kiirmärge')))
+  if ($null -eq $win) { Start-Sleep -Milliseconds 300 }
+}
+if ($null -eq $win) { Fail 'akent ei leitud' }
+Info 'OK: aken olemas'
+
+function Find-ByName($rootEl, $name, $type) {
+  $cond = New-Object System.Windows.Automation.AndCondition(
+    (New-Object System.Windows.Automation.PropertyCondition($AE::NameProperty, $name)),
+    (New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $type)))
+  return $rootEl.FindFirst($TS::Descendants, $cond)
+}
+
+$edit = $win.FindFirst($TS::Descendants, (New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, $CT::Edit)))
+if ($null -eq $edit) { Fail 'tekstiala ei leitud' }
+$editValue = $edit.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
+
+$checkboxButton = Find-ByName $win 'Lisa märkeruut' $CT::Button
+if ($null -eq $checkboxButton) { Fail 'nuppu "Lisa märkeruut" ei leitud' }
+Info 'OK: nupp "Lisa märkeruut" olemas'
+
+$checkboxButton.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+Start-Sleep -Milliseconds 500
+$value = $editValue.Current.Value
+if ($value -eq '- [ ] ') { Info 'OK: nupp lisas märkeruudu (- [ ] )' } else { Fail "ootasin '- [ ] ', sain: [$value]" }
+
+$editValue.SetValue('- [ ] tere')
+Start-Sleep -Milliseconds 300
+$saveButton = Find-ByName $win 'Salvesta' $CT::Button
+if ($null -eq $saveButton) { Fail 'nuppu "Salvesta" ei leitud' }
+$saveButton.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+Start-Sleep -Seconds 2
+
+$files = @(Get-ChildItem $notes -Filter '*.md' -ErrorAction SilentlyContinue)
+if ($files.Count -eq 0) { Fail "märget ei tekkinud kausta $notes" }
+$note = $files | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+$content = [System.IO.File]::ReadAllText($note.FullName, [System.Text.Encoding]::UTF8)
+Info "OK: märge salvestus — $($note.FullName)"
+if ($content -match '- \[ \] tere') { Info 'OK: märkeruut jõudis faili' } else { Fail "failis pole märkeruutu: $content" }
+
+Stop-Process -Id $first.Id -Force -ErrorAction SilentlyContinue
+Start-Sleep -Milliseconds 600
+'VALMIS'
