@@ -141,6 +141,14 @@ body {
   color: var(--error);
 }
 
+.note__counter {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .note__problems {
   max-height: 96px;
   margin: 0;

@@ -40,6 +40,8 @@ export { buildFilename, formatDateTime, withCounter } from "./note/filename.ts";
 export { composeNoteAppend, composeNoteMarkdown } from "./note/markdown.ts";
 export { continueChecklist, insertCheckbox, isChecklistLine } from "./note/checklist.ts";
 export type { TextEdit } from "./note/checklist.ts";
+export { countText } from "./note/count.ts";
+export type { TextCount } from "./note/count.ts";
 export { markdownLink, resolveLinkStyle, wikiEmbed, wikiLink } from "./note/links.ts";
 export { baseName, isAbsolutePath, joinPath, resolveNotesDir } from "./paths/resolve.ts";
 export type { BasePaths } from "./paths/resolve.ts";

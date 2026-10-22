@@ -4,6 +4,7 @@ import { register, unregisterAll } from "@tauri-apps/plugin-global-shortcut";
 import {
   cloneConfig,
   continueChecklist,
+  countText,
   discardNote,
   hotkeyFieldError,
   hotkeyMatches,
@@ -41,6 +42,7 @@ function must<T extends Element>(selector: string): T {
 }
 
 const draftInput = must<HTMLTextAreaElement>("#draft");
+const counterLine = must<HTMLParagraphElement>("#counter");
 const saveButton = must<HTMLButtonElement>("#save");
 const cancelButton = must<HTMLButtonElement>("#cancel");
 const statusLine = must<HTMLParagraphElement>("#status");
@@ -85,6 +87,13 @@ function messageOf(error: unknown): string {
 function setStatus(text: string, tone: "info" | "ok" | "error" = "info"): void {
   statusLine.textContent = text;
   statusLine.dataset.tone = tone;
+}
+
+/** Sõna- ja tähemärgiloendur tekstiala all. */
+function updateCounter(): void {
+  const { words, characters } = countText(draftInput.value);
+  const characterWord = characters === 1 ? "tähemärk" : "tähemärki";
+  counterLine.textContent = `${words} sõna · ${characters} ${characterWord}`;
 }
 
 /** Püsivad probleemid (seadistus, autostart) — ei kao salvestusteate tõttu. */
@@ -136,6 +145,7 @@ async function handleSave(): Promise<void> {
       return;
     }
     draftInput.value = "";
+    updateCounter();
     setStatus(`Salvestatud: ${result.path}`, "ok");
   } catch (error) {
     setStatus(`Salvestamine ebaõnnestus: ${messageOf(error)}`, "error");
@@ -147,6 +157,7 @@ async function handleSave(): Promise<void> {
 function handleCancel(): void {
   discardNote();
   draftInput.value = "";
+  updateCounter();
   setStatus("Mustand tühistatud.", "info");
 }
 
@@ -414,6 +425,7 @@ cancelButton.addEventListener("click", () => {
 /** Rakendab core'ist tulnud tekstimuudatuse tekstialale. */
 function applyTextEdit(edit: { text: string; start: number; end: number }): void {
   draftInput.value = edit.text;
+  updateCounter();
   draftInput.setSelectionRange(edit.start, edit.end);
   draftInput.focus();
 }
@@ -437,6 +449,7 @@ function insertNewline(): void {
   }
   const value = draftInput.value;
   draftInput.value = `${value.slice(0, start)}\n${value.slice(end)}`;
+  updateCounter();
   const caret = start + 1;
   draftInput.setSelectionRange(caret, caret);
 }
@@ -499,6 +512,9 @@ pickDirButton.addEventListener("click", () => {
 saveSettingsButton.addEventListener("click", () => {
   void saveSettings();
 });
+
+draftInput.addEventListener("input", updateCounter);
+updateCounter();
 
 window.addEventListener("focus", () => {
   draftInput.focus();
