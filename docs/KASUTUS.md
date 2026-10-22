@@ -48,7 +48,7 @@ Kui tahad väiksemat ja kiiremat exet, mille võib vabalt mujale kopeerida, tee 
    **salve ikooni** (Windows 11 peidab uue ikooni esialgu ülevoolualasse — „Show hidden icons").
 2. Kiirklahv või salve ikooni klõps näitab akent; fookus läheb kohe tekstialale.
 3. **Enter** või nupp „Salvesta" kirjutab märkme faili; **Ctrl+Enter** lisab reavahetuse
-   (märkeruudu real jätkab loendit uue `- [ ] `-ga). Nupp **☑** lisab kursorile
+   (märkeruudu real jätkab loendit uue `- [ ] `-ga). Nupp **☑** (tekstiala kohal) lisab kursorile
    Markdowni märkeruudu (`- [ ] `) — Obsidiani ülesannete jaoks.
    **Esc** peidab akna (mustand jääb alles). Nupp „Tühista" tühjendab mustandi.
 4. **Sulgenupp (X) ei lõpeta rakendust** — aken peidetakse, rakendus jääb salve ikoonile.
