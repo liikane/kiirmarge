@@ -83,11 +83,6 @@ body {
   gap: 8px;
 }
 
-/* Tekstitööriistad tekstiala kohal */
-.note__toolbar {
-  display: flex;
-  gap: 6px;
-}
 
 .btn {
   padding: 8px 14px;

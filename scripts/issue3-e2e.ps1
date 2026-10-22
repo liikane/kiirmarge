@@ -76,6 +76,17 @@ if ($buttonRect.Top -lt $editRect.Top) {
 } else {
   Fail "nupp ei ole tekstialast kõrgemal (nupp.Top=$([int]$buttonRect.Top), tekstiala.Top=$([int]$editRect.Top))"
 }
+$pin = Find-ByName $win 'Kinnita ekraanile' $CT::Button
+$gear = Find-ByName $win 'Seaded' $CT::Button
+if ($null -eq $pin -or $null -eq $gear) { Fail 'päise nuppe ei leitud' }
+$pinTop = [int]$pin.Current.BoundingRectangle.Top
+$gearTop = [int]$gear.Current.BoundingRectangle.Top
+$cbTop = [int]$buttonRect.Top
+if (([Math]::Abs($cbTop - $pinTop) -le 4) -and ([Math]::Abs($cbTop - $gearTop) -le 4)) {
+  Info 'OK: ☑ on samal real 📌 ja ⚙ nupuga'
+} else {
+  Fail "nupud ei ole samal real: ☑=$cbTop 📌=$pinTop ⚙=$gearTop"
+}
 
 $editValue = $edit.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
 $checkboxButton.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
