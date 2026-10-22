@@ -56,6 +56,8 @@ Kui tahad väiksemat ja kiiremat exet, mille võib vabalt mujale kopeerida, tee 
 5. Teine käivitus ei ava uut akent — olemasolev tuuakse esile ja teine protsess lõpetab töö.
 6. Esmakäivitusel luuakse seadistus ja näidatakse aken automaatselt.
 7. **Seaded** avanevad akna paremas ülanurgas hammasratta (⚙) nupust — eraldi dialoogi pole.
+   Selle kõrval on **📌 nupp**, mis lülitab akna „alati esiplaanil“ režiimi; olek salvestub
+   seadistusse (`general.always_on_top`) ja püsib ka taaskäivitusel.
 8. Tekstiala all on **sõna- ja tähemärgiloendur**, mis uueneb kirjutamise ajal (ja ka nupu ☑, Ctrl+Enteri, salvestamise ning tühistamise järel).
 
 ## Kuhu failid lähevad

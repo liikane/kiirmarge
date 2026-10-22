@@ -178,6 +178,12 @@ body {
   line-height: 1;
 }
 
+/* Kinnitatud (alati esiplaanil) olek */
+.btn--icon[aria-pressed="true"] {
+  border-color: var(--focus);
+  color: var(--focus);
+}
+
 .settings {
   display: flex;
   flex-direction: column;

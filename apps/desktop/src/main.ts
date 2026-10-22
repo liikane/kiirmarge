@@ -52,6 +52,7 @@ const hotkeyHint = must<HTMLSpanElement>("#hotkey-hint");
 
 const settingsPanel = must<HTMLElement>("#settings");
 const toggleSettingsButton = must<HTMLButtonElement>("#toggle-settings");
+const pinButton = must<HTMLButtonElement>("#pin");
 const notesDirInput = must<HTMLInputElement>("#notes-dir");
 const pickDirButton = must<HTMLButtonElement>("#pick-dir");
 const noteModeSelect = must<HTMLSelectElement>("#note-mode");
@@ -94,6 +95,33 @@ function updateCounter(): void {
   const { words, characters } = countText(draftInput.value);
   const characterWord = characters === 1 ? "tähemärk" : "tähemärki";
   counterLine.textContent = `${words} sõna · ${characters} ${characterWord}`;
+}
+
+/** Nööpnõela olek: kas aken on alati esiplaanil. */
+function renderPin(): void {
+  const pinned = config?.general.always_on_top ?? false;
+  pinButton.setAttribute("aria-pressed", pinned ? "true" : "false");
+  pinButton.title = pinned
+    ? "Vabasta ekraanilt (ei ole alati esiplaanil)"
+    : "Kinnita ekraanile (alati esiplaanil)";
+}
+
+/** Lülitab „alati esiplaanil" režiimi ja salvestab selle seadistusse. */
+async function togglePin(): Promise<void> {
+  if (config === null) return;
+  const next = !config.general.always_on_top;
+  try {
+    await invoke<void>("set_always_on_top", { value: next });
+    config.general.always_on_top = next;
+    renderPin();
+    await invoke<void>("write_config", { text: serializeConfig(config) });
+    setStatus(
+      next ? "Aken on kinnitatud ekraanile (alati esiplaanil)." : "Aken on vabastatud.",
+      "info",
+    );
+  } catch (error) {
+    setStatus(`Kinnitamise muutmine ebaõnnestus: ${messageOf(error)}`, "error");
+  }
 }
 
 /** Püsivad probleemid (seadistus, autostart) — ei kao salvestusteate tõttu. */
@@ -374,6 +402,7 @@ async function bootstrap(): Promise<void> {
   closeHotkey = parseHotkey(loaded.config.hotkeys.close);
   hotkeyHint.textContent = loaded.config.hotkeys.open;
   renderSettings(loaded.config);
+  renderPin();
 
   await invoke<void>("set_always_on_top", { value: loaded.config.general.always_on_top });
 
@@ -511,6 +540,10 @@ pickDirButton.addEventListener("click", () => {
 
 saveSettingsButton.addEventListener("click", () => {
   void saveSettings();
+});
+
+pinButton.addEventListener("click", () => {
+  void togglePin();
 });
 
 draftInput.addEventListener("input", updateCounter);
