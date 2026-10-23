@@ -4,6 +4,7 @@ import { formatHotkey, hotkeyEquals, parseHotkey, type Hotkey } from "../hotkey/
 import { DEFAULT_CONFIG, DEFAULT_CONFIG_TOML, cloneConfig } from "./defaults.ts";
 import type { HotkeysConfig, KiirmargeConfig } from "./types.ts";
 import {
+  AFTER_SAVE,
   datetimeFormatError,
   filenameFormatError,
   hotkeyFieldError,
@@ -37,7 +38,7 @@ export function createDefaultConfigText(): string {
 
 /** Lubatud võtmed sektsioonide kaupa — tundmatu võti antakse teada. */
 const KNOWN_KEYS: Record<string, readonly string[]> = {
-  general: ["mode", "theme", "always_on_top", "autostart"],
+  general: ["mode", "theme", "always_on_top", "autostart", "after_save"],
   storage: [
     "vault",
     "notes_dir",
@@ -247,6 +248,14 @@ export function parseConfigText(text: string): ParsedConfig {
     defaults.general.autostart,
     reader,
   );
+  const afterSave = readEnum(
+    general,
+    "after_save",
+    "general.after_save",
+    defaults.general.after_save,
+    AFTER_SAVE,
+    reader,
+  );
 
   const vault = readString(storage, "vault", "storage.vault", defaults.storage.vault, reader);
   const notesDir = readString(
@@ -343,7 +352,7 @@ export function parseConfigText(text: string): ParsedConfig {
   reportHotkeyConflicts(hotkeysConfig, reader);
 
   const config: KiirmargeConfig = {
-    general: { mode, theme, always_on_top: alwaysOnTop, autostart },
+    general: { mode, theme, always_on_top: alwaysOnTop, autostart, after_save: afterSave },
     storage: {
       vault,
       notes_dir: notesDir,

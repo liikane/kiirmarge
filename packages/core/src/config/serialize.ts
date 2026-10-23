@@ -21,6 +21,7 @@ export function serializeConfig(config: KiirmargeConfig): string {
     `theme = ${quote(general.theme)}             # "dark" | "light" | "system"`,
     `always_on_top = ${general.always_on_top}`,
     `autostart = ${general.autostart}          # true = käivita Windowsi sisselogimisel`,
+    `after_save = ${quote(general.after_save)}     # "stay" = aken jääb avatuks | "confirm" = 5 s kinnitus`,
     "",
     "[storage]",
     `vault = ${quote(storage.vault)}                 # obsidian-režiimis vaulti juurkaust`,

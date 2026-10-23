@@ -10,6 +10,7 @@ mode = "standalone"        # "standalone" | "obsidian"
 theme = "dark"             # "dark" | "light" | "system"
 always_on_top = true
 autostart = false          # true = käivita Windowsi sisselogimisel
+after_save = "stay"     # "stay" = aken jääb avatuks | "confirm" = 5 s kinnitus
 
 [storage]
 vault = ""                 # obsidian-režiimis vaulti juurkaust

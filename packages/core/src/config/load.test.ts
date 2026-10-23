@@ -19,6 +19,17 @@ test("näidisfail docs/config.example.toml on vaikeväärtustega kooskõlas", ()
   assert.deepEqual(parsed.config, DEFAULT_CONFIG);
 });
 
+test("after_save: lubatud väärtus ja vigane väärtus", () => {
+  const confirm = parseConfigText('[general]\nafter_save = "confirm"');
+  assert.equal(confirm.config.general.after_save, "confirm");
+  assert.deepEqual(confirm.problems, []);
+
+  const bad = parseConfigText('[general]\nafter_save = "hiljem"');
+  assert.equal(bad.config.general.after_save, "stay");
+  assert.equal(bad.problems.length, 1);
+  assert.equal(bad.problems[0]?.field, "general.after_save");
+});
+
 test("katkine TOML: vaikeväärtused ja selge teade", () => {
   const parsed = parseConfigText("[general\nmode = \"dark\"");
   assert.deepEqual(parsed.config, DEFAULT_CONFIG);

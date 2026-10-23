@@ -103,6 +103,14 @@
           Käivita arvuti käivitamisel
         </label>
 
+        <div class="settings__row">
+          <label class="settings__label" for="after-save">Pärast salvestamist</label>
+          <select id="after-save" class="input">
+            <option value="stay">Aken jääb avatuks</option>
+            <option value="confirm">Kuva 5 s „Salvestatud!“ ja peida aken</option>
+          </select>
+        </div>
+
         <div class="settings__actions">
           <button id="save-settings" class="btn btn--primary" type="button">Salvesta seaded</button>
         </div>
@@ -126,6 +134,11 @@
       <p id="notice" class="note__notice" role="alert" hidden></p>
       <p id="status" class="note__status" role="status" aria-live="polite"></p>
       <ul id="problems" class="note__problems" aria-label="Seadistuse probleemid" hidden></ul>
+
+      <div id="saved" class="saved" hidden>
+        <p class="saved__title">Salvestatud!</p>
+        <pre id="saved-text" class="saved__text"></pre>
+      </div>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

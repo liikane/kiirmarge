@@ -5,6 +5,8 @@ export type Theme = "dark" | "light" | "system";
 export type LinkStyle = "auto" | "wiki" | "markdown";
 /** Kas iga märge läheb omaette faili või kõik ühte liitfaili. */
 export type NoteMode = "per-note" | "single-file";
+/** Pärast salvestamist: aken jääb avatuks või kuvatakse 5 s kinnitus. */
+export type AfterSave = "stay" | "confirm";
 
 /** [general] sektsioon */
 export interface GeneralConfig {
@@ -13,6 +15,8 @@ export interface GeneralConfig {
   always_on_top: boolean;
   /** Käivitada rakendus Windowsi sisselogimisel. */
   autostart: boolean;
+  /** "stay" = aken jääb pärast salvestamist avatuks; "confirm" = 5 s kinnitus ja peitmine. */
+  after_save: AfterSave;
 }
 
 /** [storage] sektsioon */

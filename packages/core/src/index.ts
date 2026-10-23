@@ -3,6 +3,7 @@ export { createDefaultConfigText, parseConfigText } from "./config/load.ts";
 export { serializeConfig } from "./config/serialize.ts";
 export type { ConfigProblem, ParsedConfig } from "./config/load.ts";
 export type {
+  AfterSave,
   GeneralConfig,
   HotkeysConfig,
   KiirmargeConfig,
@@ -13,6 +14,7 @@ export type {
   Theme,
 } from "./config/types.ts";
 export {
+  AFTER_SAVE,
   datetimeFormatError,
   filenameFormatError,
   hotkeyFieldError,

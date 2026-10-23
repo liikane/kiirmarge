@@ -49,6 +49,8 @@ const statusLine = must<HTMLParagraphElement>("#status");
 const noticeLine = must<HTMLParagraphElement>("#notice");
 const problemList = must<HTMLUListElement>("#problems");
 const hotkeyHint = must<HTMLSpanElement>("#hotkey-hint");
+const savedOverlay = must<HTMLElement>("#saved");
+const savedText = must<HTMLElement>("#saved-text");
 
 const settingsPanel = must<HTMLElement>("#settings");
 const toggleSettingsButton = must<HTMLButtonElement>("#toggle-settings");
@@ -62,6 +64,7 @@ const hotkeyOpenInput = must<HTMLInputElement>("#hotkey-open");
 const hotkeySaveInput = must<HTMLInputElement>("#hotkey-save");
 const hotkeyCloseInput = must<HTMLInputElement>("#hotkey-close");
 const autostartCheckbox = must<HTMLInputElement>("#autostart");
+const afterSaveSelect = must<HTMLSelectElement>("#after-save");
 const saveSettingsButton = must<HTMLButtonElement>("#save-settings");
 const checkboxButton = must<HTMLButtonElement>("#checkbox");
 const modeSelect = must<HTMLSelectElement>("#mode");
@@ -80,6 +83,7 @@ let notesDir = "";
 let saveHotkey: Hotkey | null = null;
 let closeHotkey: Hotkey | null = null;
 let saving = false;
+let savedTimer: number | null = null;
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -95,6 +99,29 @@ function updateCounter(): void {
   const { words, characters } = countText(draftInput.value);
   const characterWord = characters === 1 ? "tähemärk" : "tähemärki";
   counterLine.textContent = `${words} sõna · ${characters} ${characterWord}`;
+}
+
+/** Kinnituse peitmine ja taimeri tühistamine. */
+function clearSaved(): void {
+  if (savedTimer !== null) {
+    window.clearTimeout(savedTimer);
+    savedTimer = null;
+  }
+  savedOverlay.hidden = true;
+}
+
+/** 5 sekundi kinnitus „Salvestatud!“ koos salvestatud tekstiga; siis peidab akna. */
+function showSaved(text: string): void {
+  clearSaved();
+  savedText.textContent = text;
+  savedOverlay.hidden = false;
+  savedTimer = window.setTimeout(() => {
+    savedTimer = null;
+    savedOverlay.hidden = true;
+    draftInput.value = "";
+    updateCounter();
+    void invoke<void>("hide_main_window");
+  }, 5000);
 }
 
 /** Nööpnõela olek: kas aken on alati esiplaanil. */
@@ -159,6 +186,7 @@ function acceleratorOf(input: string): string {
 }
 
 async function openWindow(): Promise<void> {
+  clearSaved();
   await invoke<void>("show_main_window");
   draftInput.focus();
 }
@@ -166,6 +194,7 @@ async function openWindow(): Promise<void> {
 async function handleSave(): Promise<void> {
   if (saving || config === null || noteStore === null) return;
   saving = true;
+  const draft = draftInput.value.trim();
   try {
     const result = await saveNote(draftInput.value, { clock, noteStore, config });
     if (!result.ok) {
@@ -174,7 +203,11 @@ async function handleSave(): Promise<void> {
     }
     draftInput.value = "";
     updateCounter();
-    setStatus(`Salvestatud: ${result.path}`, "ok");
+    if (config.general.after_save === "confirm") {
+      showSaved(draft);
+    } else {
+      setStatus(`Salvestatud: ${result.path}`, "ok");
+    }
   } catch (error) {
     setStatus(`Salvestamine ebaõnnestus: ${messageOf(error)}`, "error");
   } finally {
@@ -237,6 +270,7 @@ function renderSettings(current: KiirmargeConfig): void {
   hotkeySaveInput.value = current.hotkeys.save;
   hotkeyCloseInput.value = current.hotkeys.close;
   autostartCheckbox.checked = current.general.autostart;
+  afterSaveSelect.value = current.general.after_save;
   singleFileRow.hidden = current.storage.note_mode !== "single-file";
 }
 
@@ -278,6 +312,7 @@ async function saveSettings(): Promise<void> {
   next.storage.note_mode = noteModeSelect.value === "single-file" ? "single-file" : "per-note";
   next.storage.single_file = singleFileInput.value.trim();
   next.general.autostart = autostartCheckbox.checked;
+  next.general.after_save = afterSaveSelect.value === "confirm" ? "confirm" : "stay";
   next.hotkeys.open = hotkeyOpenInput.value.trim();
   next.hotkeys.save = hotkeySaveInput.value.trim();
   next.hotkeys.close = hotkeyCloseInput.value.trim();
@@ -484,6 +519,18 @@ function insertNewline(): void {
 }
 
 document.addEventListener("keydown", (event) => {
+  // Kinnitusvaate ajal: Esc peidab akna kohe, muud klahvid ei tee midagi.
+  if (!savedOverlay.hidden) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      clearSaved();
+      draftInput.value = "";
+      updateCounter();
+      void invoke<void>("hide_main_window");
+    }
+    return;
+  }
+
   const target = event.target as HTMLElement | null;
   const inSettings = target !== null && target.closest("#settings") !== null;
 

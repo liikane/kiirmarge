@@ -150,6 +150,35 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* 5 sekundi kinnitus pärast salvestamist */
+.saved {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  background: var(--bg);
+}
+
+.saved__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ok);
+}
+
+.saved__text {
+  flex: 1;
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  color: var(--text);
+}
+
 .note__problems {
   max-height: 96px;
   margin: 0;

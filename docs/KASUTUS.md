@@ -50,6 +50,8 @@ Kui tahad väiksemat ja kiiremat exet, mille võib vabalt mujale kopeerida, tee 
 3. **Enter** või nupp „Salvesta" kirjutab märkme faili; **Ctrl+Enter** lisab reavahetuse
    (märkeruudu real jätkab loendit uue `- [ ] `-ga). Nupp **☑** (päises 📌 ja ⚙ kõrval) lisab kursorile
    Markdowni märkeruudu (`- [ ] `) — Obsidiani ülesannete jaoks.
+   Kui seadetes on „Kuva 5 s kinnitus“, kuvatakse pärast salvestamist 5 sekundiks **„Salvestatud!“**
+   koos salvestatud tekstiga ja aken peitub (on jälle saadaval salve ikooni või kiirklahvi kaudu).
    **Esc** peidab akna (mustand jääb alles). Nupp „Tühista" tühjendab mustandi.
 4. **Sulgenupp (X) ei lõpeta rakendust** — aken peidetakse, rakendus jääb salve ikoonile.
    Lõpetamiseks: paremklõps salve ikoonil → **Välju**.
@@ -98,6 +100,7 @@ Rakenduses saab muuta:
 | Salvestamise klahv | vaikimisi `Enter` (Ctrl+Enter jääb alati reavahetuseks) |
 | Sulgemise klahv | vaikimisi `Esc` |
 | Käivita arvuti käivitamisel | autostart (kirjutab ühe registry-kirje) |
+| Pärast salvestamist | „Aken jääb avatuks“ või „Kuva 5 s kinnitus ja peida aken“ |
 
 Tähtsamad väljad `config.toml`-is:
 

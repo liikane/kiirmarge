@@ -1,12 +1,13 @@
 // Seadistuse väljade valideerimine. Iga funktsioon tagastab veateate või null.
 
 import { hotkeyError } from "../hotkey/parse.ts";
-import type { LinkStyle, Mode, NoteMode, Theme } from "./types.ts";
+import type { AfterSave, LinkStyle, Mode, NoteMode, Theme } from "./types.ts";
 
 export const THEMES: readonly Theme[] = ["dark", "light", "system"];
 export const MODES: readonly Mode[] = ["standalone", "obsidian"];
 export const LINK_STYLES: readonly LinkStyle[] = ["auto", "wiki", "markdown"];
 export const NOTE_MODES: readonly NoteMode[] = ["per-note", "single-file"];
+export const AFTER_SAVE: readonly AfterSave[] = ["stay", "confirm"];
 
 export function isTheme(value: unknown): value is Theme {
   return typeof value === "string" && (THEMES as readonly string[]).includes(value);
@@ -26,6 +27,10 @@ const ILLEGAL_FILENAME_RE = /[\\/:*?"<>|]/;
 
 export function isNoteMode(value: unknown): value is NoteMode {
   return typeof value === "string" && (NOTE_MODES as readonly string[]).includes(value);
+}
+
+export function isAfterSave(value: unknown): value is AfterSave {
+  return typeof value === "string" && (AFTER_SAVE as readonly string[]).includes(value);
 }
 
 /** Liitfaili nime kontroll: ainult failinimi, ilma tee ja keelatud märkideta. */

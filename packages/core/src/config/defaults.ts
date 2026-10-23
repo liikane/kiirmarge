@@ -8,6 +8,7 @@ export const DEFAULT_CONFIG: KiirmargeConfig = {
     theme: "dark",
     always_on_top: true,
     autostart: false,
+    after_save: "stay",
   },
   storage: {
     vault: "",
