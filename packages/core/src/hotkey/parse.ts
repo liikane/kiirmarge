@@ -63,7 +63,7 @@ const NAMED_KEYS: Record<string, string> = {
 /** Teisendab ühe klahvinime kanooniliseks; tagastab null, kui tundmatu. */
 export function canonicalKey(part: string): string | null {
   const lower = part.toLowerCase();
-  if (lower === "~" || lower === "`" || lower === "backquote" || lower === "tilde") return "~";
+  if (lower === "~" || lower === "`" || lower === "backquote" || lower === "tilde" || lower === "ˇ") return "~";
   const named = NAMED_KEYS[lower];
   if (named) return named;
   if (/^f([1-9]|1[0-9]|2[0-4])$/.test(lower)) return lower.toUpperCase();

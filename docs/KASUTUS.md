@@ -44,7 +44,7 @@ Kui tahad väiksemat ja kiiremat exet, mille võib vabalt mujale kopeerida, tee 
 
 ## Kuidas töötab
 
-1. Rakendus käivitub **peidetud aknaga**, registreerib globaalse kiirklahvi **Ctrl+Shift+~** ja lisab
+1. Rakendus käivitub **peidetud aknaga**, registreerib globaalse kiirklahvi **Ctrl+Shift+1** ja lisab
    **salve ikooni** (Windows 11 peidab uue ikooni esialgu ülevoolualasse — „Show hidden icons").
 2. Kiirklahv või salve ikooni klõps näitab akent; fookus läheb kohe tekstialale.
 3. **Enter** või nupp „Salvesta" kirjutab märkme faili; **Ctrl+Enter** lisab reavahetuse
@@ -94,7 +94,7 @@ Rakenduses saab muuta:
 | Märkmete kaust | kuhu märkmed kirjutatakse („Vali…" avab kaustavalija) |
 | Salvestamise viis | „Üks fail iga märkme kohta" või „Kõik märkmed ühes failis" |
 | Liitfaili nimi | faili nimi liitfaili režiimis (nt `Kiirmärkmed.md`) |
-| Kiirklahv akna avamiseks | globaalne kiirklahv (vaikimisi `Ctrl+Shift+~`) |
+| Kiirklahv akna avamiseks | globaalne kiirklahv (vaikimisi `Ctrl+Shift+1`) |
 | Salvestamise klahv | vaikimisi `Enter` (Ctrl+Enter jääb alati reavahetuseks) |
 | Sulgemise klahv | vaikimisi `Esc` |
 | Käivita arvuti käivitamisel | autostart (kirjutab ühe registry-kirje) |
@@ -103,7 +103,7 @@ Tähtsamad väljad `config.toml`-is:
 
 | Väli | Tähendus |
 |------|----------|
-| `hotkeys.open` | globaalne kiirklahv, nt `Ctrl+Shift+~` (peab olema muuteklahviga) |
+| `hotkeys.open` | globaalne kiirklahv, nt `Ctrl+Shift+1` (peab olema muuteklahviga) |
 | `hotkeys.save` / `hotkeys.close` | aknasisesed klahvid (`Enter` / `Esc`); üksikklahv on lubatud |
 | `storage.notes_dir` | märkmete kaust (absoluutne või suhteline `Dokumendid`/vaulti suhtes) |
 | `storage.note_mode` | `per-note` = iga märge eraldi faili; `single-file` = kõik ühte |

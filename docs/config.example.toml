@@ -23,7 +23,7 @@ note_mode = "per-note"     # "per-note" = iga märge eraldi, "single-file" = kõ
 single_file = "Kiirmärkmed.md"  # liitfaili nimi, kui note_mode = "single-file"
 
 [hotkeys]
-open = "Ctrl+Shift+~"
+open = "Ctrl+Shift+1"
 save = "Enter"
 close = "Esc"
 screenshot = ""            # tühi = välja lülitatud

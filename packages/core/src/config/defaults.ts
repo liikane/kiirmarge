@@ -21,7 +21,7 @@ export const DEFAULT_CONFIG: KiirmargeConfig = {
     single_file: "Kiirmärkmed.md",
   },
   hotkeys: {
-    open: "Ctrl+Shift+~",
+    open: "Ctrl+Shift+1",
     save: "Enter",
     close: "Esc",
     screenshot: "",

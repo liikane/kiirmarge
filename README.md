@@ -7,7 +7,7 @@ märkme Markdown-failina. Installerit ei ole vaja — rakendus on üks exe, sead
 
 ## Hetkeseis
 
-- **Globaalne kiirklahv** (vaikimisi `Ctrl+Shift+~`) avab akna; **Esc** peidab.
+- **Globaalne kiirklahv** (vaikimisi `Ctrl+Shift+1`) avab akna; **Esc** peidab.
 - **Salve ikoon** menüüga „Ava kiirmärge" / „Välju"; sulgenupp (X) peidab akna, ei lõpeta rakendust.
 - **Üks eksemplar** — teine käivitus toob olemasoleva akna esile.
 - **Seaded rakenduses** (⚙): märkmete kaust, üks-fail/liitfail režiim, kiirklahvid, autostart.
@@ -54,7 +54,7 @@ cd apps/desktop/src-tauri; cargo test   # 6 testi (Rust: failiteed, liitfail)
 
 | Klahv | Mida teeb |
 |-------|-----------|
-| `Ctrl+Shift+~` | näita akent (globaalne, muudetav seadetes) |
+| `Ctrl+Shift+1` | näita akent (globaalne, muudetav seadetes) |
 | `Enter` | salvesta märge |
 | `Ctrl+Enter` | reavahetus tekstis |
 | `Esc` | peida aken (seadete paneelil sulgeb paneeli) |

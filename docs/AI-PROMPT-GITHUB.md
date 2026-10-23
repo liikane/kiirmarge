@@ -89,7 +89,7 @@ sinu ülesanne on see **GitHubi viia**, mitte koodi ümber teha.
 - Arhitektuur: `packages/core` = puhas TS (seadistus, märkme formaat, kiirklahvid, teed, kasutusjuhud),
   `apps/desktop` = Tauri kest (TS UI + Rusti käsud failide/akna/dialoogi jaoks). Core ei importi Tauri API-sid.
 - Seadistus on portatiivne: `config.toml` exe kõrval, varuplaan `%APPDATA%\Kiirmarge\config.toml`.
-- Kiirklahvid: vaikimisi `Ctrl+Shift+~` (globaalne), `Enter` (salvesta), `Ctrl+Enter` (uus rida), `Esc` (peida).
+- Kiirklahvid: vaikimisi `Ctrl+Shift+1` (globaalne), `Enter` (salvesta), `Ctrl+Enter` (uus rida), `Esc` (peida).
 - Etapid ja otsused: `docs/PLAAN.md`, raportid `docs/RAPORT-*.md`, kasutusjuhend `docs/KASUTUS.md`.
 
 ## Väljund

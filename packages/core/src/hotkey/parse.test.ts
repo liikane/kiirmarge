@@ -73,6 +73,15 @@ test("tilde: parse, format, accelerator", () => {
   assert.equal(canonicalKey("backquote"), "~");
 });
 
+test("caron-kuju ˇ loetakse samaks klahviks nagu ~", () => {
+  const caron = parseHotkey("Ctrl+Shift+ˇ");
+  assert.notEqual(caron, null);
+  if (caron === null) return;
+  assert.equal(formatHotkey(caron), "Ctrl+Shift+~");
+  assert.equal(toAccelerator(caron), "ctrl+shift+backquote");
+  assert.equal(canonicalKey("ˇ"), "~");
+});
+
 
 
 test("hotkeyMatches: üksikklahv Enter (Enter salvestab, Ctrl+Enter uus rida)", () => {
