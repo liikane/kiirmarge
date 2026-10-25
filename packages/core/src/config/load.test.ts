@@ -106,6 +106,12 @@ test("note_mode ja single_file loetakse", () => {
   assert.equal(parsed.config.storage.single_file, "Märkmed.md");
 });
 
+test("daily-note note_mode loetakse", () => {
+  const parsed = parseConfigText('[storage]\nnote_mode = "daily-note"');
+  assert.deepEqual(parsed.problems, []);
+  assert.equal(parsed.config.storage.note_mode, "daily-note");
+});
+
 test("vigane note_mode ja single_file asendatakse vaikeväärtustega", () => {
   const parsed = parseConfigText('[storage]\nnote_mode = "kokku"\nsingle_file = "alam/märkmed.md"');
   assert.equal(parsed.config.storage.note_mode, "per-note");

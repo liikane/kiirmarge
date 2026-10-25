@@ -20,7 +20,7 @@ default_to_desktop = false
 link_style = "auto"        # "auto" | "wiki" (![[..]]) | "markdown"
 filename_format = "YYYY-MM-DD-HHmmss.md"
 datetime_format = "YYYY-MM-DD HH:mm"
-note_mode = "per-note"     # "per-note" = iga märge eraldi, "single-file" = kõik ühte
+note_mode = "per-note"     # "per-note" = eraldi fail, "single-file" = liitfail, "daily-note" = Obsidiani päevamärge
 single_file = "Kiirmärkmed.md"  # liitfaili nimi, kui note_mode = "single-file"
 
 [hotkeys]

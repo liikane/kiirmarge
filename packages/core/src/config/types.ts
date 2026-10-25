@@ -3,8 +3,8 @@
 export type Mode = "standalone" | "obsidian";
 export type Theme = "dark" | "light" | "system";
 export type LinkStyle = "auto" | "wiki" | "markdown";
-/** Kas iga märge läheb omaette faili või kõik ühte liitfaili. */
-export type NoteMode = "per-note" | "single-file";
+/** Märkme siht: eraldi fail, liitfail või Obsidiani päevamärge. */
+export type NoteMode = "per-note" | "single-file" | "daily-note";
 /** Pärast salvestamist: aken jääb avatuks või kuvatakse 5 s kinnitus. */
 export type AfterSave = "stay" | "confirm";
 
@@ -28,7 +28,7 @@ export interface StorageConfig {
   link_style: LinkStyle;
   filename_format: string;
   datetime_format: string;
-  /** "per-note" = iga märge eraldi faili; "single-file" = kõik ühte faili. */
+  /** "per-note" = eraldi fail; "single-file" = liitfail; "daily-note" = Obsidiani päevamärge. */
   note_mode: NoteMode;
   /** Liitfaili nimi (kasutatakse, kui note_mode = "single-file"). */
   single_file: string;

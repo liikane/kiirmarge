@@ -58,6 +58,7 @@ const pinButton = must<HTMLButtonElement>("#pin");
 const notesDirInput = must<HTMLInputElement>("#notes-dir");
 const pickDirButton = must<HTMLButtonElement>("#pick-dir");
 const noteModeSelect = must<HTMLSelectElement>("#note-mode");
+const dailyNoteModeOption = must<HTMLOptionElement>("#daily-note-mode");
 const singleFileRow = must<HTMLElement>("#single-file-row");
 const singleFileInput = must<HTMLInputElement>("#single-file");
 const hotkeyOpenInput = must<HTMLInputElement>("#hotkey-open");
@@ -256,6 +257,7 @@ function updateModeVisibility(mode: string): void {
   vaultRow.hidden = !obsidian;
   pickDirButton.hidden = obsidian;
   notesDirInput.placeholder = obsidian ? "nt Kiirmärkmed (vaulti suhtes)" : "";
+  dailyNoteModeOption.disabled = !obsidian;
 }
 
 function renderSettings(current: KiirmargeConfig): void {
@@ -309,7 +311,12 @@ async function saveSettings(): Promise<void> {
         ? "markdown"
         : "auto";
   next.storage.notes_dir = notesDirInput.value.trim();
-  next.storage.note_mode = noteModeSelect.value === "single-file" ? "single-file" : "per-note";
+  next.storage.note_mode =
+    noteModeSelect.value === "daily-note"
+      ? "daily-note"
+      : noteModeSelect.value === "single-file"
+        ? "single-file"
+        : "per-note";
   next.storage.single_file = singleFileInput.value.trim();
   next.general.autostart = autostartCheckbox.checked;
   next.general.after_save = afterSaveSelect.value === "confirm" ? "confirm" : "stay";
@@ -333,6 +340,10 @@ async function saveSettings(): Promise<void> {
       );
       return;
     }
+  }
+  if (next.storage.note_mode === "daily-note" && mode !== "obsidian") {
+    setStatus("Päevamärkme režiim töötab ainult Obsidiani vaultis.", "error");
+    return;
   }
   if (next.storage.note_mode === "single-file") {
     const problem = singleFileError(next.storage.single_file);

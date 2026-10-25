@@ -25,3 +25,11 @@ test("serializeConfig: erimärgid tees ja kiirklahvis ei riku faili", () => {
   assert.equal(parsed.config.storage.single_file, "Kõik märkmed.md");
   assert.equal(parsed.config.hotkeys.open, "Ctrl+Alt+K");
 });
+
+test("serializeConfig: daily-note note_mode säilib ringkäigul", () => {
+  const config = cloneConfig(DEFAULT_CONFIG);
+  config.storage.note_mode = "daily-note";
+  const parsed = parseConfigText(serializeConfig(config));
+  assert.deepEqual(parsed.problems, []);
+  assert.equal(parsed.config.storage.note_mode, "daily-note");
+});

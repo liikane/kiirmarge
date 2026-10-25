@@ -47,7 +47,7 @@ Kui tahad väiksemat ja kiiremat exet, mille võib vabalt mujale kopeerida, tee 
 1. Rakendus käivitub **peidetud aknaga**, registreerib globaalse kiirklahvi **Ctrl+Shift+1** ja lisab
    **salve ikooni** (Windows 11 peidab uue ikooni esialgu ülevoolualasse — „Show hidden icons").
 2. Kiirklahv või salve ikooni klõps näitab akent; fookus läheb kohe tekstialale.
-3. **Enter** või nupp „Salvesta" kirjutab märkme faili; **Ctrl+Enter** lisab reavahetuse
+3. **Enter** või nupp „Salvesta" kirjutab märkme seadistatud sihtkohta; **Ctrl+Enter** lisab reavahetuse
    (märkeruudu real jätkab loendit uue `- [ ] `-ga). Nupp **☑** (päises 📌 ja ⚙ kõrval) lisab kursorile
    Markdowni märkeruudu (`- [ ] `) — Obsidiani ülesannete jaoks.
    Kui seadetes on „Kuva 5 s kinnitus“, kuvatakse pärast salvestamist 5 sekundiks **„Salvestatud!“**
@@ -68,7 +68,8 @@ Kui tahad väiksemat ja kiiremat exet, mille võib vabalt mujale kopeerida, tee 
 |------|---------|
 | Seadistus | **exe kõrval** `config.toml` (portatiivne); kirjutuskaitstud kausta korral `%APPDATA%\Kiirmarge\config.toml`. Vt `docs/SEADISTUSE-ASUKOHT.md` |
 | Märkmed | kaust, mis on seadetes valitud (`storage.notes_dir`); praegu `C:\Users\lauri\Desktop` |
-| Märkme nimi | `YYYY-MM-DD-HHmmss.md` (üks fail märkme kohta); kui sama sekund kordub, siis `...-2.md` |
+| Märkme nimi (`per-note`) | `YYYY-MM-DD-HHmmss.md` (üks fail märkme kohta); kui sama sekund kordub, siis `...-2.md` |
+| Päevamärge (`daily-note`) | Tänane `YYYY-MM-DD.md` fail seadistatud märkmete kaustas; uus mõte lisatakse ülesandena |
 | Liitfail | kui seadetes on „Kõik märkmed ühes failis", läheb kõik ühte faili (`storage.single_file`, vaikimisi `Kiirmärkmed.md`) |
 
 Märkme sisu:
@@ -80,6 +81,15 @@ Märkme sisu:
 
 <sinu tekst>
 ```
+
+Päevamärkme režiimis kirjutatakse selle asemel tänasesse `YYYY-MM-DD.md` faili:
+
+```markdown
+- [ ] Uus idee või märkus
+```
+
+Nii on mõte kohe Obsidiani ülesannete nimekirjas, kus selle saab edasi tegutsemiseks töödelda või
+märgituks teha. Režiimi valik on saadaval ainult siis, kui **Režiim** on „Obsidiani vault“.
 
 ## Seadistuse muutmine
 
@@ -94,7 +104,7 @@ Rakenduses saab muuta:
 | Seade | Mida teeb |
 |-------|-----------|
 | Märkmete kaust | kuhu märkmed kirjutatakse („Vali…" avab kaustavalija) |
-| Salvestamise viis | „Üks fail iga märkme kohta" või „Kõik märkmed ühes failis" |
+| Salvestamise viis | Eraldi märkmefail, liitfail või Obsidiani päevamärge (`YYYY-MM-DD.md`), kuhu märge lisatakse `- [ ]` ülesandena (ainult Obsidiani režiimis) |
 | Liitfaili nimi | faili nimi liitfaili režiimis (nt `Kiirmärkmed.md`) |
 | Kiirklahv akna avamiseks | globaalne kiirklahv (vaikimisi `Ctrl+Shift+1`) |
 | Salvestamise klahv | vaikimisi `Enter` (Ctrl+Enter jääb alati reavahetuseks) |
@@ -109,7 +119,7 @@ Tähtsamad väljad `config.toml`-is:
 | `hotkeys.open` | globaalne kiirklahv, nt `Ctrl+Shift+1` (peab olema muuteklahviga) |
 | `hotkeys.save` / `hotkeys.close` | aknasisesed klahvid (`Enter` / `Esc`); üksikklahv on lubatud |
 | `storage.notes_dir` | märkmete kaust (absoluutne või suhteline `Dokumendid`/vaulti suhtes) |
-| `storage.note_mode` | `per-note` = iga märge eraldi faili; `single-file` = kõik ühte |
+| `storage.note_mode` | `per-note` = eraldi fail; `single-file` = kõik ühte faili; `daily-note` = tänase Obsidiani päevamärke ülesandena |
 | `storage.single_file` | liitfaili nimi, kui `note_mode = "single-file"` |
 | `storage.default_to_desktop` | `true` → märkmed töölauale (kui `notes_dir` on suhteline) |
 | `general.always_on_top` | kas aken on alati esiplaanil |
