@@ -6,6 +6,7 @@ import {
   continueChecklist,
   countText,
   discardNote,
+  formatHotkey,
   hotkeyFieldError,
   hotkeyMatches,
   insertCheckbox,
@@ -45,6 +46,8 @@ const draftInput = must<HTMLTextAreaElement>("#draft");
 const counterLine = must<HTMLParagraphElement>("#counter");
 const saveButton = must<HTMLButtonElement>("#save");
 const cancelButton = must<HTMLButtonElement>("#cancel");
+const saveHint = must<HTMLElement>("#hint-save");
+const cancelHint = must<HTMLElement>("#hint-cancel");
 const statusLine = must<HTMLParagraphElement>("#status");
 const noticeLine = must<HTMLParagraphElement>("#notice");
 const problemList = must<HTMLUListElement>("#problems");
@@ -56,6 +59,10 @@ const settingsPanel = must<HTMLElement>("#settings");
 const toggleSettingsButton = must<HTMLButtonElement>("#toggle-settings");
 const pinButton = must<HTMLButtonElement>("#pin");
 const notesDirInput = must<HTMLInputElement>("#notes-dir");
+const notesDirLabel = must<HTMLElement>("#notes-dir-label");
+const notesDirResolved = must<HTMLParagraphElement>("#notes-dir-resolved");
+const locationSelect = must<HTMLSelectElement>("#location");
+const locationRow = must<HTMLElement>("#location-row");
 const pickDirButton = must<HTMLButtonElement>("#pick-dir");
 const noteModeSelect = must<HTMLSelectElement>("#note-mode");
 const singleFileRow = must<HTMLElement>("#single-file-row");
@@ -185,6 +192,43 @@ function acceleratorOf(input: string): string {
   return hotkey === null ? input : toAccelerator(hotkey);
 }
 
+/** Kiirklahvi kuvamise kuju: core kanooniline tekst (nt "Ctrl+Shift+1", "Enter"). */
+function hotkeyLabel(input: string): string {
+  const hotkey = parseHotkey(input);
+  return hotkey === null ? input.trim() : formatHotkey(hotkey);
+}
+
+/** `aria-keyshortcuts` väärtus — WAI-ARIA nõuab Control/Escape, mitte Ctrl/Esc. */
+function ariaShortcutOf(input: string): string {
+  const hotkey = parseHotkey(input);
+  if (hotkey === null) return "";
+  const parts: string[] = [];
+  if (hotkey.ctrl) parts.push("Control");
+  if (hotkey.alt) parts.push("Alt");
+  if (hotkey.shift) parts.push("Shift");
+  if (hotkey.meta) parts.push("Meta");
+  parts.push(hotkey.key === "Esc" ? "Escape" : hotkey.key);
+  return parts.join("+");
+}
+
+/**
+ * Nuppude klahvispikker ja tekstiala vihje. Kutsutakse nii käivitusel kui ka
+ * seadete salvestamisel — spikker ei saa seadistusest erineda.
+ */
+function renderHotkeyHints(save: string, close: string): void {
+  const saveLabel = hotkeyLabel(save);
+  const closeLabel = hotkeyLabel(close);
+  saveHint.textContent = saveLabel;
+  cancelHint.textContent = closeLabel;
+  saveButton.setAttribute("aria-keyshortcuts", ariaShortcutOf(save));
+  cancelButton.setAttribute("aria-keyshortcuts", ariaShortcutOf(close));
+  saveButton.title = `Salvesta märge (${saveLabel})`;
+  cancelButton.title = `Tühista mustand (${closeLabel})`;
+
+  const newline = saveLabel === "Ctrl+Enter" ? "" : ", Ctrl+Enter uus rida";
+  draftInput.placeholder = `Kirjuta märge… (${saveLabel} salvestab${newline})`;
+}
+
 async function openWindow(): Promise<void> {
   clearSaved();
   await invoke<void>("show_main_window");
@@ -250,20 +294,70 @@ function renderVaultOptions(current: string): void {
   vaultSelect.value = current.trim();
 }
 
-/** Režiimist sõltuvate väljade nähtavus ja vihjed. */
-function updateModeVisibility(mode: string): void {
-  const obsidian = mode === "obsidian";
+/** Salvestuskoha valik seadetes — tuletatakse seadistusest, eraldi välja ei lisata. */
+type Location = "documents" | "desktop" | "custom";
+
+/** Viimati valitud salvestuskoht (vajalik tee ümberarvutamiseks valiku muutmisel). */
+let locationState: Location = "documents";
+
+function currentLocation(storage: KiirmargeConfig["storage"]): Location {
+  if (storage.default_to_desktop) return "desktop";
+  return isAbsolutePath(storage.notes_dir) ? "custom" : "documents";
+}
+
+function notesDirLabelText(location: Location, obsidian: boolean): string {
+  if (obsidian) return "Märkmete kaust (vaulti suhtes)";
+  if (location === "desktop") return "Alamkausta nimi töölaual";
+  if (location === "custom") return "Märkmete kaust (täistee)";
+  return "Märkmete kaust (Dokumentide suhtes)";
+}
+
+/**
+ * Tee, mis valitud seadetega tegelikult kasutusele tuleb. Kasutab sama
+ * `resolveNotesDir`-i, mis salvestamisel — seega vihje ei saa tegelikust erineda.
+ */
+function resolvedDirFor(location: Location, notesDir: string): string {
+  if (basePaths === null || config === null) return "";
+  const preview = cloneConfig(config);
+  preview.general.mode = modeSelect.value === "obsidian" ? "obsidian" : "standalone";
+  preview.storage.vault = vaultSelect.value.trim();
+  preview.storage.default_to_desktop = location === "desktop";
+  preview.storage.notes_dir = notesDir;
+  return resolveNotesDir(preview, basePaths);
+}
+
+/** Salvestuskohast sõltuvate väljade nähtavus, silt ja lahendatud tee. */
+function updateLocationUi(): void {
+  const obsidian = modeSelect.value === "obsidian";
+  const location = locationSelect.value as Location;
+  locationRow.hidden = obsidian;
   vaultRow.hidden = !obsidian;
-  pickDirButton.hidden = obsidian;
-  notesDirInput.placeholder = obsidian ? "nt Kiirmärkmed (vaulti suhtes)" : "";
+  // Töölaua puhul on „Märkmete kaust" alamkausta nimi, mitte valitav tee.
+  pickDirButton.hidden = obsidian || location === "desktop";
+  notesDirLabel.textContent = notesDirLabelText(location, obsidian);
+  notesDirInput.placeholder = obsidian
+    ? "nt Kiirmärkmed (vaulti suhtes)"
+    : location === "custom"
+      ? "nt C:\\Users\\…\\Märkmed"
+      : "nt Kiirmärkmed";
+
+  if (config === null || basePaths === null) {
+    notesDirResolved.textContent = "";
+    return;
+  }
+  const typed = notesDirInput.value.trim();
+  notesDirResolved.textContent =
+    typed === "" ? "Märkmed: kaust on täpsustamata" : `Märkmed: ${resolvedDirFor(location, typed)}`;
 }
 
 function renderSettings(current: KiirmargeConfig): void {
   modeSelect.value = current.general.mode;
   renderVaultOptions(current.storage.vault);
   linkStyleSelect.value = current.storage.link_style;
-  updateModeVisibility(current.general.mode);
+  locationSelect.value = currentLocation(current.storage);
+  locationState = locationSelect.value as Location;
   notesDirInput.value = current.storage.notes_dir;
+  updateLocationUi();
   noteModeSelect.value = current.storage.note_mode;
   singleFileInput.value = current.storage.single_file;
   hotkeyOpenInput.value = current.hotkeys.open;
@@ -277,7 +371,15 @@ function renderSettings(current: KiirmargeConfig): void {
 async function pickNotesDir(): Promise<void> {
   try {
     const folder = await invoke<string | null>("pick_folder", { current: notesDirInput.value });
-    if (folder !== null && folder.trim() !== "") notesDirInput.value = folder;
+    if (folder !== null && folder.trim() !== "") {
+      notesDirInput.value = folder;
+      // Kaustavalija annab täisteekonna — see on „Kohandatud kaust".
+      if (isAbsolutePath(folder)) {
+        locationSelect.value = "custom";
+        locationState = "custom";
+      }
+      updateLocationUi();
+    }
   } catch (error) {
     setStatus(`Kausta valimine ebaõnnestus: ${messageOf(error)}`, "error");
   }
@@ -309,6 +411,8 @@ async function saveSettings(): Promise<void> {
         ? "markdown"
         : "auto";
   next.storage.notes_dir = notesDirInput.value.trim();
+  const location = locationSelect.value as Location;
+  next.storage.default_to_desktop = location === "desktop";
   next.storage.note_mode = noteModeSelect.value === "single-file" ? "single-file" : "per-note";
   next.storage.single_file = singleFileInput.value.trim();
   next.general.autostart = autostartCheckbox.checked;
@@ -320,6 +424,24 @@ async function saveSettings(): Promise<void> {
   if (next.storage.notes_dir === "") {
     setStatus("Märkmete kaust ei tohi olla tühi.", "error");
     return;
+  }
+  if (mode === "standalone") {
+    if (location === "custom" && !isAbsolutePath(next.storage.notes_dir)) {
+      setStatus(
+        `„Kohandatud kaust“ vajab täisteekonda (nt C:\\Users\\…\\Märkmed) — vali „Vali…“ või kleebi tee.`,
+        "error",
+      );
+      return;
+    }
+    if (location !== "custom" && isAbsolutePath(next.storage.notes_dir)) {
+      setStatus(
+        location === "desktop"
+          ? `„Töölaud“ kasutab ainult alamkausta nime — täisteekonna jaoks vali „Kohandatud kaust“.`
+          : `„Dokumendid“ eeldab suhtelist kausta (nt Kiirmärkmed). Täisteekonna jaoks vali „Kohandatud kaust“.`,
+        "error",
+      );
+      return;
+    }
   }
   if (mode === "obsidian") {
     if (next.storage.vault === "") {
@@ -366,7 +488,8 @@ async function saveSettings(): Promise<void> {
     saveHotkey = parseHotkey(next.hotkeys.save);
     closeHotkey = parseHotkey(next.hotkeys.close);
     hotkeyHint.textContent = next.hotkeys.open;
-    updateModeVisibility(mode);
+    renderHotkeyHints(next.hotkeys.save, next.hotkeys.close);
+    updateLocationUi();
 
     await invoke<void>("set_always_on_top", { value: next.general.always_on_top });
     const actualAutostart = await invoke<boolean>("sync_autostart", {
@@ -438,6 +561,7 @@ async function bootstrap(): Promise<void> {
   hotkeyHint.textContent = loaded.config.hotkeys.open;
   renderSettings(loaded.config);
   renderPin();
+  renderHotkeyHints(loaded.config.hotkeys.save, loaded.config.hotkeys.close);
 
   await invoke<void>("set_always_on_top", { value: loaded.config.general.always_on_top });
 
@@ -571,11 +695,27 @@ noteModeSelect.addEventListener("change", () => {
 });
 
 modeSelect.addEventListener("change", () => {
-  updateModeVisibility(modeSelect.value);
   if (modeSelect.value === "obsidian" && isAbsolutePath(notesDirInput.value.trim())) {
     notesDirInput.value = "Kiirmärkmed";
   }
+  updateLocationUi();
 });
+
+locationSelect.addEventListener("change", () => {
+  const next = locationSelect.value as Location;
+  const typed = notesDirInput.value.trim();
+  if (next === "custom") {
+    // Näita seni kehtinud täisteekonda — valiku hetkel ei liigu märkmed kuhugi.
+    if (!isAbsolutePath(typed)) notesDirInput.value = resolvedDirFor(locationState, typed);
+  } else if (isAbsolutePath(typed)) {
+    notesDirInput.value = "Kiirmärkmed";
+  }
+  locationState = next;
+  updateLocationUi();
+});
+
+notesDirInput.addEventListener("input", updateLocationUi);
+vaultSelect.addEventListener("change", updateLocationUi);
 
 pickVaultButton.addEventListener("click", () => {
   void pickVault();

@@ -57,3 +57,19 @@ test("obsidian ilma vaultita langeb tagasi Dokumentidesse", () => {
   config.storage.vault = "";
   assert.equal(resolveNotesDir(config, BASE), "C:\\Users\\lauri\\Documents\\Kiirmärkmed");
 });
+
+test("obsidian: vault võidab töölaua-eelistuse", () => {
+  const config = cloneConfig(DEFAULT_CONFIG);
+  config.general.mode = "obsidian";
+  config.storage.vault = "C:\\Obs\\Lauri_2026";
+  config.storage.default_to_desktop = true;
+  assert.equal(resolveNotesDir(config, BASE), "C:\\Obs\\Lauri_2026\\Kiirmärkmed");
+});
+
+test("obsidian ilma vaultita + töölaud: märkmed lähevad töölauale", () => {
+  const config = cloneConfig(DEFAULT_CONFIG);
+  config.general.mode = "obsidian";
+  config.storage.vault = "";
+  config.storage.default_to_desktop = true;
+  assert.equal(resolveNotesDir(config, BASE), "C:\\Users\\lauri\\Desktop\\Kiirmärkmed");
+});

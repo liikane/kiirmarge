@@ -53,8 +53,18 @@
           <p class="settings__hint">Märkmed lähevad vaulti alamkausta; „Märkmete kaust“ on vaulti suhtes.</p>
         </div>
 
+        <div class="settings__row" id="location-row">
+          <label class="settings__label" for="location">Salvestuskoht</label>
+          <select id="location" class="input">
+            <option value="documents">Dokumendid</option>
+            <option value="desktop">Töölaud</option>
+            <option value="custom">Kohandatud kaust</option>
+          </select>
+          <p class="settings__hint settings__hint--path" id="notes-dir-resolved"></p>
+        </div>
+
         <div class="settings__row">
-          <label class="settings__label" for="notes-dir">Märkmete kaust</label>
+          <label class="settings__label" id="notes-dir-label" for="notes-dir">Märkmete kaust</label>
           <div class="settings__inline">
             <input id="notes-dir" class="input" type="text" spellcheck="false" />
             <button id="pick-dir" class="btn" type="button">Vali…</button>
@@ -127,8 +137,22 @@
       <p id="counter" class="note__counter">0 sõna · 0 tähemärki</p>
 
       <div class="note__actions">
-        <button id="save" class="btn btn--primary" type="button">Salvesta</button>
-        <button id="cancel" class="btn" type="button">Tühista</button>
+        <button
+          id="save"
+          class="btn btn--primary"
+          type="button"
+          aria-label="Salvesta"
+          aria-keyshortcuts="Enter"
+          title="Salvesta märge (Enter)"
+        >Salvesta<kbd id="hint-save" class="btn__key" aria-hidden="true"></kbd></button>
+        <button
+          id="cancel"
+          class="btn"
+          type="button"
+          aria-label="Tühista"
+          aria-keyshortcuts="Escape"
+          title="Tühista mustand (Esc)"
+        >Tühista<kbd id="hint-cancel" class="btn__key" aria-hidden="true"></kbd></button>
       </div>
 
       <p id="notice" class="note__notice" role="alert" hidden></p>

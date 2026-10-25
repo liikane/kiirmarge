@@ -37,21 +37,28 @@ export function baseName(path: string): string {
 /**
  * Millisesse kausta märge salvestatakse.
  *
- * 1. `default_to_desktop = true` -> töölaud, kausta nimena `notes_dir` viimane osa
- * 2. absoluutne `notes_dir` -> kasutatakse täpselt nii
- * 3. `mode = "obsidian"` ja `vault` seatud -> vault + notes_dir
+ * 1. `mode = "obsidian"` ja `vault` seatud (ning `notes_dir` on suhteline) -> vault + notes_dir
+ * 2. `default_to_desktop = true` -> töölaud, kausta nimena `notes_dir` viimane osa
+ * 3. absoluutne `notes_dir` -> kasutatakse täpselt nii
  * 4. muidu -> Dokumendid + notes_dir
+ *
+ * Töölaua-eelistus kehtib ainult eraldiseisvas režiimis: Obsidiani vault on määrav, muidu
+ * kirjutaks töölaualüliti vaulti valiku üle (ja märkmed satuksid valesse kohta).
  */
 export function resolveNotesDir(config: KiirmargeConfig, base: BasePaths): string {
   const storage = config.storage;
+  if (
+    config.general.mode === "obsidian" &&
+    storage.vault.trim() !== "" &&
+    !isAbsolutePath(storage.notes_dir)
+  ) {
+    return joinPath(storage.vault, storage.notes_dir);
+  }
   if (storage.default_to_desktop) {
     return joinPath(base.desktop, baseName(storage.notes_dir));
   }
   if (isAbsolutePath(storage.notes_dir)) {
     return storage.notes_dir;
-  }
-  if (config.general.mode === "obsidian" && storage.vault.trim() !== "") {
-    return joinPath(storage.vault, storage.notes_dir);
   }
   return joinPath(base.documents, storage.notes_dir);
 }

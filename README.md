@@ -11,6 +11,10 @@ märkme Markdown-failina. Installerit ei ole vaja — rakendus on üks exe, sead
 - **Salve ikoon** menüüga „Ava kiirmärge" / „Välju"; sulgenupp (X) peidab akna, ei lõpeta rakendust.
 - **Üks eksemplar** — teine käivitus toob olemasoleva akna esile.
 - **Seaded rakenduses** (⚙): märkmete kaust, üks-fail/liitfail režiim, kiirklahvid, autostart.
+- **Salvestuskoht** seadetes: Dokumendid / Töölaud / kohandatud kaust. Töölaua tee küsitakse
+  Windowsilt (known folder), seega töötab ka siis, kui töölaud on OneDrive'i suunatud.
+- **Klahvispikker nuppudel**: „Salvesta" ja „Tühista" näitavad kehtivat klahvi (`Enter`/`Esc`)
+  ja see uueneb koos seadetega.
 - **Portatiivne seadistus**: `config.toml` exe kõrval; kui kaust on kirjutuskaitstud, siis
   `%APPDATA%\Kiirmarge\config.toml`.
 - Märkmed: Markdown, vaikimisi `# Kiirmärge` + ajatempel + tekst (või kõik ühes liitfailis).
@@ -45,7 +49,7 @@ npm run tauri --workspace @kiirmarge/desktop -- build --debug --no-bundle
 ## Testid
 
 ```powershell
-npm test                # core: 67 testi (node --test)
+npm test                # core: 89 testi (node --test)
 npm run typecheck       # core + desktop (tsc --noEmit)
 cd apps/desktop/src-tauri; cargo test   # 6 testi (Rust: failiteed, liitfail)
 ```
@@ -107,9 +111,10 @@ Põhimõte: **äri­loogika on `packages/core`-is ja testitud**; Rust teeb ainul
 | Fail | Sisu |
 |------|------|
 | `docs/PLAAN.md` | arhitektuuri- ja arendusplaan (etapid E1–E10) |
-| `docs/KASUTUS.md` | kasutusjuhend + tõrkeotsing |
+| `docs/KASUTUS.md` | kasutusjuhend (paigaldus, näited, seaded, tõrkeotsing) |
 | `docs/SEADISTUSE-ASUKOHT.md` | miks seadistus on exe kõrval (portatiivne) |
 | `docs/RAPORT-E1.md`, `RAPORT-E2.md`, `RAPORT-E3.md`, `RAPORT-SEADED.md` | etappide raportid |
+| `docs/RAPORT-ISSUE-*.md` | üksikute Issue'de teostus ja kontrollid |
 | `docs/uuring/tauri2-ehitus.md` | kinnitatud Tauri 2 faktid (kiirklahvid, õigused) |
 
 ## Litsents

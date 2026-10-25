@@ -16,7 +16,7 @@ after_save = "stay"     # "stay" = aken jääb avatuks | "confirm" = 5 s kinnitu
 vault = ""                 # obsidian-režiimis vaulti juurkaust
 notes_dir = "Kiirmärkmed"
 attachments_dir = "Kiirmärkmed/manused"
-default_to_desktop = false
+default_to_desktop = false   # true = märkmed töölauale alamkausta; kehtib ainult eraldiseisvas režiimis
 link_style = "auto"        # "auto" | "wiki" (![[..]]) | "markdown"
 filename_format = "YYYY-MM-DD-HHmmss.md"
 datetime_format = "YYYY-MM-DD HH:mm"
