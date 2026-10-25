@@ -7,6 +7,8 @@ export type LinkStyle = "auto" | "wiki" | "markdown";
 export type NoteMode = "per-note" | "single-file";
 /** Pärast salvestamist: aken jääb avatuks või kuvatakse 5 s kinnitus. */
 export type AfterSave = "stay" | "confirm";
+/** GitHubi Issue'i silt — ühtlasi märkme tüüp seadetes. */
+export type IssueLabel = "bug" | "idea" | "enhancement" | "documentation";
 
 /** [general] sektsioon */
 export interface GeneralConfig {
@@ -42,9 +44,25 @@ export interface HotkeysConfig {
   screenshot: string;
 }
 
+/**
+ * [github] sektsioon. Token EI ole siin — see elab Windowsi mandaadihoidlas
+ * (vt Rust-käsk `github_save_token`).
+ */
+export interface GithubConfig {
+  /** Kas GitHubi Issue saatmine on rakenduses sisse lülitatud. */
+  enabled: boolean;
+  /** Hoidla kujul "omanik/nimi". */
+  repo: string;
+  /** Vaikimisi silt, mida Issue'le pannakse. */
+  label: IssueLabel;
+  /** Kas akna märkeruut „Saada ka GitHub Issue" on vaikimisi sees. */
+  send_by_default: boolean;
+}
+
 /** Kogu rakenduse seadistus */
 export interface KiirmargeConfig {
   general: GeneralConfig;
   storage: StorageConfig;
   hotkeys: HotkeysConfig;
+  github: GithubConfig;
 }

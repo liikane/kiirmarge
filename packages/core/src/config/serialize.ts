@@ -10,7 +10,7 @@ function quote(value: string): string {
  * Ringkäik peab kehtima: `parseConfigText(serializeConfig(config))` annab sama seadistuse.
  */
 export function serializeConfig(config: KiirmargeConfig): string {
-  const { general, storage, hotkeys } = config;
+  const { general, storage, hotkeys, github } = config;
   return [
     "# Kiirmärkme seadistus",
     "# Muuda väärtusi vabalt — rakendus loeb seda igal käivitusel.",
@@ -39,6 +39,12 @@ export function serializeConfig(config: KiirmargeConfig): string {
     `save = ${quote(hotkeys.save)}`,
     `close = ${quote(hotkeys.close)}`,
     `screenshot = ${quote(hotkeys.screenshot)}            # tühi = välja lülitatud`,
+    "",
+    "[github]",
+    `enabled = ${github.enabled}          # true = märkeruut „Saada ka GitHub Issue“ on aknas nähtav`,
+    `repo = ${quote(github.repo)}               # omanik/nimi, nt "liikane/kiirmarge"`,
+    `label = ${quote(github.label)}      # "bug" | "idea" | "enhancement" | "documentation"`,
+    `send_by_default = ${github.send_by_default}   # märkeruut on vaikimisi sees`,
     "",
   ].join("\n");
 }

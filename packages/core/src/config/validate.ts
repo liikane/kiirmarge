@@ -1,13 +1,14 @@
 // Seadistuse väljade valideerimine. Iga funktsioon tagastab veateate või null.
 
 import { hotkeyError } from "../hotkey/parse.ts";
-import type { AfterSave, LinkStyle, Mode, NoteMode, Theme } from "./types.ts";
+import type { AfterSave, IssueLabel, LinkStyle, Mode, NoteMode, Theme } from "./types.ts";
 
 export const THEMES: readonly Theme[] = ["dark", "light", "system"];
 export const MODES: readonly Mode[] = ["standalone", "obsidian"];
 export const LINK_STYLES: readonly LinkStyle[] = ["auto", "wiki", "markdown"];
 export const NOTE_MODES: readonly NoteMode[] = ["per-note", "single-file"];
 export const AFTER_SAVE: readonly AfterSave[] = ["stay", "confirm"];
+export const ISSUE_LABELS: readonly IssueLabel[] = ["bug", "idea", "enhancement", "documentation"];
 
 export function isTheme(value: unknown): value is Theme {
   return typeof value === "string" && (THEMES as readonly string[]).includes(value);
@@ -31,6 +32,32 @@ export function isNoteMode(value: unknown): value is NoteMode {
 
 export function isAfterSave(value: unknown): value is AfterSave {
   return typeof value === "string" && (AFTER_SAVE as readonly string[]).includes(value);
+}
+
+export function isIssueLabel(value: unknown): value is IssueLabel {
+  return typeof value === "string" && (ISSUE_LABELS as readonly string[]).includes(value);
+}
+
+/**
+ * GitHubi hoidla kuju "omanik/nimi". GitHub ise lubab omanikus ainult tähti, numbreid ja
+ * sidekriipse (max 39) ning hoidla nimes ka punkti ja alakriipsu (max 100).
+ */
+export function repoError(value: string, allowEmpty = false): string | null {
+  const trimmed = value.trim();
+  if (trimmed === "") {
+    return allowEmpty ? null : "Hoidla on täpsustamata (kuju: omanik/nimi).";
+  }
+  const parts = trimmed.split("/");
+  if (parts.length !== 2) return "Hoidla peab olema kujul omanik/nimi, nt liikane/kiirmarge.";
+  const owner = parts[0] ?? "";
+  const name = parts[1] ?? "";
+  if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(owner)) {
+    return "Omaniku nimi ei ole GitHubi hoidla jaoks korrektne.";
+  }
+  if (!/^[A-Za-z0-9._-]{1,100}$/.test(name) || name === "." || name === "..") {
+    return "Hoidla nimi ei ole korrektne.";
+  }
+  return null;
 }
 
 /** Liitfaili nime kontroll: ainult failinimi, ilma tee ja keelatud märkideta. */

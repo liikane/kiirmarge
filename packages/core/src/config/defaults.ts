@@ -27,6 +27,12 @@ export const DEFAULT_CONFIG: KiirmargeConfig = {
     close: "Esc",
     screenshot: "",
   },
+  github: {
+    enabled: false,
+    repo: "",
+    label: "enhancement",
+    send_by_default: false,
+  },
 };
 
 /**
@@ -41,5 +47,6 @@ export function cloneConfig(config: KiirmargeConfig): KiirmargeConfig {
     general: { ...config.general },
     storage: { ...config.storage },
     hotkeys: { ...config.hotkeys },
+    github: { ...config.github },
   };
 }

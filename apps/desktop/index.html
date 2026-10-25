@@ -121,6 +121,57 @@
           </select>
         </div>
 
+        <div class="settings__row">
+          <label class="settings__check">
+            <input id="github-enabled" type="checkbox" />
+            Saada märge ka GitHubi Issue'na
+          </label>
+        </div>
+
+        <div class="settings__row" id="github-settings" hidden>
+          <label class="settings__label" for="github-repo">GitHubi hoidla (omanik/nimi)</label>
+          <input
+            id="github-repo"
+            class="input"
+            type="text"
+            spellcheck="false"
+            placeholder="liikane/kiirmarge"
+          />
+
+          <label class="settings__label" for="github-label">Vaikimisi silt</label>
+          <select id="github-label" class="input">
+            <option value="bug">Viga (bug)</option>
+            <option value="idea">Idee (idea)</option>
+            <option value="enhancement">Ettepanek (enhancement)</option>
+            <option value="documentation">Juhend (documentation)</option>
+          </select>
+
+          <label class="settings__check">
+            <input id="github-default" type="checkbox" />
+            Märkeruut on aknas vaikimisi sees
+          </label>
+
+          <label class="settings__label" for="github-token">GitHubi token (õigus Issues: write)</label>
+          <div class="settings__inline">
+            <input
+              id="github-token"
+              class="input"
+              type="password"
+              spellcheck="false"
+              autocomplete="off"
+              placeholder="ghp_… / github_pat_…"
+            />
+            <button id="github-save-token" class="btn" type="button">Salvesta võti</button>
+            <button id="github-clear-token" class="btn" type="button">Kustuta võti</button>
+          </div>
+          <p class="settings__hint settings__hint--path" id="github-token-status"></p>
+
+          <div class="settings__inline">
+            <button id="github-test" class="btn" type="button">Testi ühendust</button>
+          </div>
+          <p class="settings__hint settings__hint--path" id="github-test-status"></p>
+        </div>
+
         <div class="settings__actions">
           <button id="save-settings" class="btn btn--primary" type="button">Salvesta seaded</button>
         </div>
@@ -135,6 +186,17 @@
       ></textarea>
 
       <p id="counter" class="note__counter">0 sõna · 0 tähemärki</p>
+
+      <label class="note__github" id="github-send-row" hidden>
+        <input id="send-github" type="checkbox" />
+        Saada ka GitHub Issue
+        <select id="send-github-label" class="input input--inline" aria-label="Issue tüüp">
+          <option value="bug">Viga</option>
+          <option value="idea">Idee</option>
+          <option value="enhancement">Ettepanek</option>
+          <option value="documentation">Juhend</option>
+        </select>
+      </label>
 
       <div class="note__actions">
         <button
@@ -162,6 +224,7 @@
       <div id="saved" class="saved" hidden>
         <p class="saved__title">Salvestatud!</p>
         <pre id="saved-text" class="saved__text"></pre>
+        <p id="saved-github" class="saved__github" hidden></p>
       </div>
     </main>
     <script type="module" src="/src/main.ts"></script>

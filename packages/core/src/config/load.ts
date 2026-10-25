@@ -2,16 +2,17 @@ import { parse } from "smol-toml";
 
 import { formatHotkey, hotkeyEquals, parseHotkey, type Hotkey } from "../hotkey/parse.ts";
 import { DEFAULT_CONFIG, DEFAULT_CONFIG_TOML, cloneConfig } from "./defaults.ts";
-import type { HotkeysConfig, KiirmargeConfig } from "./types.ts";
+import type { GithubConfig, HotkeysConfig, KiirmargeConfig } from "./types.ts";
 import {
   AFTER_SAVE,
   datetimeFormatError,
   filenameFormatError,
   hotkeyFieldError,
-
+  ISSUE_LABELS,
   LINK_STYLES,
   MODES,
   NOTE_MODES,
+  repoError,
   singleFileError,
   THEMES,
 } from "./validate.ts";
@@ -51,6 +52,7 @@ const KNOWN_KEYS: Record<string, readonly string[]> = {
     "single_file",
   ],
   hotkeys: ["open", "save", "close", "screenshot"],
+  github: ["enabled", "repo", "label", "send_by_default"],
 };
 
 interface Reader {
@@ -341,6 +343,33 @@ export function parseConfigText(text: string): ParsedConfig {
     ),
   };
 
+  const githubSection = sectionOf(parsedRaw, "github");
+  const githubConfig: GithubConfig = {
+    enabled: readBoolean(
+      githubSection,
+      "enabled",
+      "github.enabled",
+      defaults.github.enabled,
+      reader,
+    ),
+    repo: readString(githubSection, "repo", "github.repo", defaults.github.repo, reader),
+    label: readEnum(
+      githubSection,
+      "label",
+      "github.label",
+      defaults.github.label,
+      ISSUE_LABELS,
+      reader,
+    ),
+    send_by_default: readBoolean(
+      githubSection,
+      "send_by_default",
+      "github.send_by_default",
+      defaults.github.send_by_default,
+      reader,
+    ),
+  };
+
   if (mode === "obsidian" && vault.trim() === "") {
     reader.problems.push({
       field: "storage.vault",
@@ -350,6 +379,13 @@ export function parseConfigText(text: string): ParsedConfig {
   }
 
   reportHotkeyConflicts(hotkeysConfig, reader);
+
+  if (githubConfig.enabled) {
+    const repoProblem = repoError(githubConfig.repo);
+    if (repoProblem !== null) {
+      reader.problems.push({ field: "github.repo", message: repoProblem });
+    }
+  }
 
   const config: KiirmargeConfig = {
     general: { mode, theme, always_on_top: alwaysOnTop, autostart, after_save: afterSave },
@@ -365,6 +401,7 @@ export function parseConfigText(text: string): ParsedConfig {
       single_file: singleFile,
     },
     hotkeys: hotkeysConfig,
+    github: githubConfig,
   };
 
   return { config, problems: reader.problems };

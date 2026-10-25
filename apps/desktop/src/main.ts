@@ -3,19 +3,29 @@ import { register, unregisterAll } from "@tauri-apps/plugin-global-shortcut";
 
 import {
   cloneConfig,
+  composeIssueBackfill,
   continueChecklist,
   countText,
+  createIssueFromNote,
+  dequeue,
   discardNote,
+  enqueue,
+  formatDateTime,
   formatHotkey,
   hotkeyFieldError,
   hotkeyMatches,
   insertCheckbox,
   isAbsolutePath,
+  isIssueLabel,
+  issueFailureOf,
   loadConfig,
+  newQueuedIssue,
   parseHotkey,
   parseObsidianVaults,
+  repoError,
   resolveNotesDir,
   saveNote,
+  sendQueuedIssue,
   serializeConfig,
   singleFileError,
   toAccelerator,
@@ -24,9 +34,12 @@ import {
   type ConfigProblem,
   type ConfigStore,
   type Hotkey,
+  type IssueClient,
+  type IssueLabel,
   type KiirmargeConfig,
   type NoteStore,
   type ObsidianVault,
+  type QueuedIssue,
 } from "@kiirmarge/core";
 
 /** Rusti poolt tulevad asukohad. */
@@ -54,6 +67,7 @@ const problemList = must<HTMLUListElement>("#problems");
 const hotkeyHint = must<HTMLSpanElement>("#hotkey-hint");
 const savedOverlay = must<HTMLElement>("#saved");
 const savedText = must<HTMLElement>("#saved-text");
+const savedGithub = must<HTMLElement>("#saved-github");
 
 const settingsPanel = must<HTMLElement>("#settings");
 const toggleSettingsButton = must<HTMLButtonElement>("#toggle-settings");
@@ -79,6 +93,20 @@ const vaultRow = must<HTMLElement>("#vault-row");
 const vaultSelect = must<HTMLSelectElement>("#vault");
 const pickVaultButton = must<HTMLButtonElement>("#pick-vault");
 const linkStyleSelect = must<HTMLSelectElement>("#link-style");
+const githubSettingsRow = must<HTMLElement>("#github-settings");
+const githubEnabledCheckbox = must<HTMLInputElement>("#github-enabled");
+const githubRepoInput = must<HTMLInputElement>("#github-repo");
+const githubLabelSelect = must<HTMLSelectElement>("#github-label");
+const githubDefaultCheckbox = must<HTMLInputElement>("#github-default");
+const githubTokenInput = must<HTMLInputElement>("#github-token");
+const githubSaveTokenButton = must<HTMLButtonElement>("#github-save-token");
+const githubClearTokenButton = must<HTMLButtonElement>("#github-clear-token");
+const githubTokenStatus = must<HTMLElement>("#github-token-status");
+const githubTestButton = must<HTMLButtonElement>("#github-test");
+const githubTestStatus = must<HTMLElement>("#github-test-status");
+const sendGithubRow = must<HTMLElement>("#github-send-row");
+const sendGithubCheckbox = must<HTMLInputElement>("#send-github");
+const sendGithubLabel = must<HTMLSelectElement>("#send-github-label");
 
 const clock: Clock = { now: () => new Date() };
 
@@ -91,9 +119,16 @@ let saveHotkey: Hotkey | null = null;
 let closeHotkey: Hotkey | null = null;
 let saving = false;
 let savedTimer: number | null = null;
+let githubTokenPresent = false;
+let issueQueue: QueuedIssue[] = [];
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+/** Tauri käsud viskavad `{ message, retryable }` — selleks loeme vea tekstina. */
+function errorText(error: unknown): string {
+  return issueFailureOf(error).message;
 }
 
 function setStatus(text: string, tone: "info" | "ok" | "error" = "info"): void {
@@ -115,6 +150,8 @@ function clearSaved(): void {
     savedTimer = null;
   }
   savedOverlay.hidden = true;
+  savedGithub.hidden = true;
+  savedGithub.textContent = "";
 }
 
 /** 5 sekundi kinnitus „Salvestatud!“ koos salvestatud tekstiga; siis peidab akna. */
@@ -156,6 +193,240 @@ async function togglePin(): Promise<void> {
   } catch (error) {
     setStatus(`Kinnitamise muutmine ebaõnnestus: ${messageOf(error)}`, "error");
   }
+}
+
+/** GitHubi võrguadapter: pääsuvõti ja päringud elavad Rusti poolel. */
+const issueClient: IssueClient = {
+  create: (input) =>
+    invoke<{ number: number; url: string }>("github_create_issue", {
+      repo: input.repo,
+      title: input.title,
+      body: input.body,
+      label: input.label,
+    }),
+};
+
+async function refreshTokenStatus(): Promise<void> {
+  try {
+    githubTokenPresent = await invoke<boolean>("github_token_status");
+  } catch {
+    githubTokenPresent = false;
+  }
+  githubTokenStatus.textContent = githubTokenPresent
+    ? "Token on salvestatud Windowsi mandaadihoidlasse."
+    : "Token puudub — ilma selleta Issue'sid ei saadeta.";
+  githubTokenStatus.dataset.tone = githubTokenPresent ? "ok" : "error";
+}
+
+/** Seadete GitHub-osa nähtavus ja väljade väärtused. */
+function renderGithub(resetCheckbox = false): void {
+  if (config === null) return;
+  githubEnabledCheckbox.checked = config.github.enabled;
+  githubRepoInput.value = config.github.repo;
+  githubLabelSelect.value = config.github.label;
+  githubDefaultCheckbox.checked = config.github.send_by_default;
+  githubSettingsRow.hidden = !config.github.enabled;
+
+  const problem = repoError(config.github.repo, true);
+  const ready = config.github.enabled && config.github.repo.trim() !== "" && problem === null;
+  sendGithubRow.hidden = !ready;
+  if (!ready) {
+    sendGithubCheckbox.checked = false;
+    if (config.github.enabled) {
+      addNotice(
+        `GitHubi Issue saatmine on sees, kuid hoidla seade vajab parandamist: ${problem ?? "hoidla on täpsustamata"}.`,
+      );
+    }
+    return;
+  }
+  sendGithubLabel.value = config.github.label;
+  if (resetCheckbox) sendGithubCheckbox.checked = config.github.send_by_default;
+}
+
+async function saveGithubCredential(): Promise<void> {
+  const entered = githubTokenInput.value.trim();
+  if (entered === "") {
+    githubTokenStatus.textContent = "Sisesta väärtus enne salvestamist.";
+    githubTokenStatus.dataset.tone = "error";
+    return;
+  }
+  try {
+    await invoke<void>("github_save_token", { value: entered });
+    githubTokenInput.value = "";
+    githubTestStatus.textContent = "";
+    await refreshTokenStatus();
+  } catch (error) {
+    githubTokenStatus.textContent = `Salvestamine ebaõnnestus: ${errorText(error)}`;
+    githubTokenStatus.dataset.tone = "error";
+  }
+}
+
+async function clearGithubCredential(): Promise<void> {
+  try {
+    await invoke<void>("github_clear_token");
+    await refreshTokenStatus();
+  } catch (error) {
+    githubTokenStatus.textContent = `Kustutamine ebaõnnestus: ${errorText(error)}`;
+    githubTokenStatus.dataset.tone = "error";
+  }
+}
+
+async function testGithub(): Promise<void> {
+  const repo = githubRepoInput.value.trim();
+  const problem = repoError(repo);
+  if (problem !== null) {
+    githubTestStatus.textContent = problem;
+    githubTestStatus.dataset.tone = "error";
+    return;
+  }
+  githubTestStatus.textContent = "Kontrollin…";
+  githubTestStatus.dataset.tone = "";
+  try {
+    const info = await invoke<{ fullName: string; private: boolean; canPush: boolean }>("github_test", {
+      repo,
+    });
+    githubTestStatus.textContent = info.canPush
+      ? `OK: ${info.fullName}${info.private ? " (privaatne)" : ""} — Issue'de loomise õigus on olemas.`
+      : `Hoidla ${info.fullName} leiti, kuid pääsuvõtil puudub Issues: write õigus.`;
+    githubTestStatus.dataset.tone = info.canPush ? "ok" : "error";
+  } catch (error) {
+    githubTestStatus.textContent = errorText(error);
+    githubTestStatus.dataset.tone = "error";
+  }
+}
+
+function looksLikeQueuedIssue(value: unknown): value is QueuedIssue {
+  if (typeof value !== "object" || value === null) return false;
+  const item = value as Record<string, unknown>;
+  return (
+    typeof item.id === "string" &&
+    typeof item.repo === "string" &&
+    typeof item.title === "string" &&
+    typeof item.body === "string" &&
+    typeof item.noteDir === "string" &&
+    typeof item.noteFile === "string" &&
+    isIssueLabel(item.label)
+  );
+}
+
+async function loadQueue(): Promise<void> {
+  try {
+    const items = await invoke<unknown[]>("queue_load");
+    issueQueue = Array.isArray(items) ? items.filter(looksLikeQueuedIssue) : [];
+  } catch (error) {
+    issueQueue = [];
+    addNotice(`GitHubi järjekorra lugemine ebaõnnestus: ${messageOf(error)}`);
+  }
+}
+
+async function persistQueue(): Promise<void> {
+  try {
+    await invoke<void>("queue_save", { items: issueQueue });
+  } catch (error) {
+    addNotice(`GitHubi järjekorra salvestamine ebaõnnestus: ${messageOf(error)}`);
+  }
+}
+
+/** Tulemus nähtavasse kohta: kinnitusvaate all või staatusereal. */
+function showGithubResult(message: string, tone: "ok" | "info" | "error"): void {
+  if (!savedOverlay.hidden) {
+    savedGithub.textContent = message;
+    savedGithub.dataset.tone = tone;
+    savedGithub.hidden = false;
+    return;
+  }
+  setStatus(message, tone);
+}
+
+/**
+ * Märkme saatmine GitHubi. Iga tulemus on kasutajale nähtav: õnnestumine, järjekord
+ * (võrk/piirang) või viga. Märkmefail on sel hetkel juba salvestatud.
+ */
+async function sendToGithub(text: string, filename: string, createdAt: Date): Promise<void> {
+  if (config === null) return;
+  const chosen = sendGithubLabel.value;
+  const label: IssueLabel = isIssueLabel(chosen) ? chosen : config.github.label;
+  const sendConfig = cloneConfig(config);
+  sendConfig.github.label = label;
+  const stamp = formatDateTime(createdAt, config.storage.datetime_format);
+
+  const result = await createIssueFromNote(text, {
+    config: sendConfig,
+    filename,
+    stamp,
+    client: issueClient,
+  });
+
+  if (result.ok) {
+    try {
+      await invoke<string>("save_note", {
+        dir: notesDir,
+        filename,
+        content: composeIssueBackfill(result.issue),
+        append: true,
+      });
+    } catch (error) {
+      addNotice(`Issue loodi, kuid märkmesse ei saanud viidet lisada: ${messageOf(error)}`);
+    }
+    showGithubResult(`GitHub: [#${result.issue.number}](${result.issue.url})`, "ok");
+    return;
+  }
+
+  if (result.failure.retryable && result.draft !== null) {
+    const item = newQueuedIssue(
+      {
+        repo: sendConfig.github.repo.trim(),
+        title: result.draft.title,
+        body: result.draft.body,
+        label,
+        noteDir: notesDir,
+        noteFile: filename,
+        createdAt: new Date().toISOString(),
+      },
+      `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    );
+    issueQueue = enqueue(issueQueue, item);
+    await persistQueue();
+    showGithubResult(
+      `GitHub: ${result.failure.message} Saatmine on järjekorras (${issueQueue.length}).`,
+      "info",
+    );
+    return;
+  }
+
+  showGithubResult(`GitHub: ${result.failure.message}`, "error");
+}
+
+/** Käivitamisel: saada uuesti see, mis eelmisel korral võrku ei jõudnud. */
+async function retryQueue(): Promise<void> {
+  if (config === null || !config.github.enabled || issueQueue.length === 0) return;
+  if (!githubTokenPresent) {
+    addNotice(`GitHubi järjekorras on ${issueQueue.length} märget, kuid pääsuvõti puudub.`);
+    return;
+  }
+
+  let sent = 0;
+  for (const item of [...issueQueue]) {
+    const result = await sendQueuedIssue(item, issueClient);
+    if (!result.ok) {
+      addNotice(`GitHubi järjekord: ${result.failure.message}`);
+      break;
+    }
+    try {
+      await invoke<string>("save_note", {
+        dir: item.noteDir,
+        filename: item.noteFile,
+        content: composeIssueBackfill(result.issue),
+        append: true,
+      });
+    } catch (error) {
+      addNotice(`Issue #${result.issue.number} loodi, kuid märkmesse ei saanud viidet lisada: ${messageOf(error)}`);
+    }
+    issueQueue = dequeue(issueQueue, item.id);
+    await persistQueue();
+    sent += 1;
+  }
+  if (sent > 0) addNotice(`GitHubi järjekorrast saadeti ${sent} Issue't.`);
 }
 
 /** Püsivad probleemid (seadistus, autostart) — ei kao salvestusteate tõttu. */
@@ -247,11 +518,13 @@ async function handleSave(): Promise<void> {
     }
     draftInput.value = "";
     updateCounter();
+    const githubRequested = !sendGithubRow.hidden && sendGithubCheckbox.checked;
     if (config.general.after_save === "confirm") {
       showSaved(draft);
     } else {
       setStatus(`Salvestatud: ${result.path}`, "ok");
     }
+    if (githubRequested) void sendToGithub(draft, result.filename, result.createdAt);
   } catch (error) {
     setStatus(`Salvestamine ebaõnnestus: ${messageOf(error)}`, "error");
   } finally {
@@ -366,6 +639,7 @@ function renderSettings(current: KiirmargeConfig): void {
   autostartCheckbox.checked = current.general.autostart;
   afterSaveSelect.value = current.general.after_save;
   singleFileRow.hidden = current.storage.note_mode !== "single-file";
+  renderGithub();
 }
 
 async function pickNotesDir(): Promise<void> {
@@ -420,6 +694,12 @@ async function saveSettings(): Promise<void> {
   next.hotkeys.open = hotkeyOpenInput.value.trim();
   next.hotkeys.save = hotkeySaveInput.value.trim();
   next.hotkeys.close = hotkeyCloseInput.value.trim();
+  next.github.enabled = githubEnabledCheckbox.checked;
+  next.github.repo = githubRepoInput.value.trim();
+  next.github.label = isIssueLabel(githubLabelSelect.value)
+    ? githubLabelSelect.value
+    : config.github.label;
+  next.github.send_by_default = githubDefaultCheckbox.checked;
 
   if (next.storage.notes_dir === "") {
     setStatus("Märkmete kaust ei tohi olla tühi.", "error");
@@ -478,6 +758,26 @@ async function saveSettings(): Promise<void> {
     setStatus(`Sulgemise klahv: ${closeProblem}`, "error");
     return;
   }
+  if (next.github.enabled) {
+    const repoProblem = repoError(next.github.repo);
+    if (repoProblem !== null) {
+      setStatus(`GitHub: ${repoProblem}`, "error");
+      return;
+    }
+  }
+
+  // Seadetes sisestatud pääsuvõti läheb kohe mandaadihoidlasse, mitte config.toml-i.
+  const entered = githubTokenInput.value.trim();
+  if (entered !== "") {
+    try {
+      await invoke<void>("github_save_token", { value: entered });
+      githubTokenInput.value = "";
+      await refreshTokenStatus();
+    } catch (error) {
+      setStatus(`Pääsuvõtme salvestamine ebaõnnestus: ${errorText(error)}`, "error");
+      return;
+    }
+  }
 
   const hotkeyChanged = next.hotkeys.open !== config.hotkeys.open;
 
@@ -490,6 +790,8 @@ async function saveSettings(): Promise<void> {
     hotkeyHint.textContent = next.hotkeys.open;
     renderHotkeyHints(next.hotkeys.save, next.hotkeys.close);
     updateLocationUi();
+    renderGithub();
+    void retryQueue();
 
     await invoke<void>("set_always_on_top", { value: next.general.always_on_top });
     const actualAutostart = await invoke<boolean>("sync_autostart", {
@@ -562,6 +864,10 @@ async function bootstrap(): Promise<void> {
   renderSettings(loaded.config);
   renderPin();
   renderHotkeyHints(loaded.config.hotkeys.save, loaded.config.hotkeys.close);
+  await refreshTokenStatus();
+  await loadQueue();
+  renderGithub(true);
+  void retryQueue();
 
   await invoke<void>("set_always_on_top", { value: loaded.config.general.always_on_top });
 
@@ -727,6 +1033,22 @@ pickDirButton.addEventListener("click", () => {
 
 saveSettingsButton.addEventListener("click", () => {
   void saveSettings();
+});
+
+githubEnabledCheckbox.addEventListener("change", () => {
+  githubSettingsRow.hidden = !githubEnabledCheckbox.checked;
+});
+
+githubSaveTokenButton.addEventListener("click", () => {
+  void saveGithubCredential();
+});
+
+githubClearTokenButton.addEventListener("click", () => {
+  void clearGithubCredential();
+});
+
+githubTestButton.addEventListener("click", () => {
+  void testGithub();
 });
 
 pinButton.addEventListener("click", () => {

@@ -129,3 +129,32 @@ test("tagastatud objekt ei ole vaikeväärtustega jagatud viide", () => {
   assert.equal(second.config.general.theme, DEFAULT_CONFIG.general.theme);
   assert.equal(DEFAULT_CONFIG.general.theme, "dark");
 });
+
+test("github: vaikimisi väljas, lubatud silt ja vigane silt", () => {
+  const off = parseConfigText("[github]\nenabled = false");
+  assert.deepEqual(off.problems, []);
+  assert.equal(off.config.github.enabled, false);
+  assert.equal(off.config.github.label, "enhancement");
+
+  const on = parseConfigText(
+    '[github]\nenabled = true\nrepo = "liikane/kiirmarge"\nlabel = "bug"\nsend_by_default = true',
+  );
+  assert.deepEqual(on.problems, []);
+  assert.deepEqual(on.config.github, {
+    enabled: true,
+    repo: "liikane/kiirmarge",
+    label: "bug",
+    send_by_default: true,
+  });
+
+  const bad = parseConfigText('[github]\nlabel = "kiire"');
+  assert.equal(bad.config.github.label, "enhancement");
+  assert.equal(bad.problems[0]?.field, "github.label");
+});
+
+test("github: sisse lülitatud ja vigane hoidla annab probleemi", () => {
+  const parsed = parseConfigText('[github]\nenabled = true\nrepo = "ilma-kaldkriipsuta"');
+  assert.equal(parsed.problems.length, 1);
+  assert.equal(parsed.problems[0]?.field, "github.repo");
+  assert.match(parsed.problems[0]?.message ?? "", /omanik\/nimi/);
+});

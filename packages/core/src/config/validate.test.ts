@@ -6,10 +6,12 @@ import {
   datetimeFormatError,
   filenameFormatError,
   hotkeyFieldError,
+  isIssueLabel,
   isLinkStyle,
   isMode,
   isNoteMode,
   isTheme,
+  repoError,
   singleFileError,
 } from "./validate.ts";
 
@@ -57,4 +59,18 @@ test("vaikeväärtused läbivad omaenda kontrolli", () => {
   assert.equal(isMode(DEFAULT_CONFIG.general.mode), true);
   assert.equal(isTheme(DEFAULT_CONFIG.general.theme), true);
   assert.equal(isLinkStyle(DEFAULT_CONFIG.storage.link_style), true);
+});
+
+test("repoError: hoidla kuju omanik/nimi", () => {
+  assert.equal(repoError("liikane/kiirmarge"), null);
+  assert.equal(repoError("liikane/kiirmarge.md"), null);
+  assert.equal(repoError("", true), null);
+  assert.notEqual(repoError(""), null);
+  assert.notEqual(repoError("kiirmarge"), null);
+  assert.notEqual(repoError("liikane/kiirmarge/lisa"), null);
+  assert.notEqual(repoError("-liikane/kiirmarge"), null);
+  assert.notEqual(repoError("liikane/kiir marge"), null);
+  assert.equal(repoError(DEFAULT_CONFIG.github.repo, true), null);
+  assert.equal(isIssueLabel(DEFAULT_CONFIG.github.label), true);
+  assert.equal(isIssueLabel("kiire"), false);
 });

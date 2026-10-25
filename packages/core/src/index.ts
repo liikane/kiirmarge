@@ -5,7 +5,9 @@ export type { ConfigProblem, ParsedConfig } from "./config/load.ts";
 export type {
   AfterSave,
   GeneralConfig,
+  GithubConfig,
   HotkeysConfig,
+  IssueLabel,
   KiirmargeConfig,
   LinkStyle,
   Mode,
@@ -18,13 +20,16 @@ export {
   datetimeFormatError,
   filenameFormatError,
   hotkeyFieldError,
+  isIssueLabel,
   isLinkStyle,
   isMode,
   isNoteMode,
   isTheme,
+  ISSUE_LABELS,
   LINK_STYLES,
   MODES,
   NOTE_MODES,
+  repoError,
   singleFileError,
   THEMES,
 } from "./config/validate.ts";
@@ -47,6 +52,19 @@ export type { TextCount } from "./note/count.ts";
 export { markdownLink, resolveLinkStyle, wikiEmbed, wikiLink } from "./note/links.ts";
 export { baseName, isAbsolutePath, joinPath, resolveNotesDir } from "./paths/resolve.ts";
 export type { BasePaths } from "./paths/resolve.ts";
+export { composeIssueBackfill, composeIssueDraft, TITLE_MAX } from "./github/compose.ts";
+export type { IssueDraft, IssueDraftOptions } from "./github/compose.ts";
+export { dequeue, enqueue, isQueued, newQueuedIssue, QUEUE_LIMIT } from "./github/queue.ts";
+export type { QueuedIssue, QueuedIssueInput } from "./github/queue.ts";
+export { createIssueFromNote, issueFailureOf, sendQueuedIssue } from "./usecases/create-issue.ts";
+export type {
+  CreateIssueInput,
+  CreateIssueResult,
+  IssueClient,
+  IssueCreated,
+  IssueFailure,
+  QueuedSendResult,
+} from "./usecases/create-issue.ts";
 export { parseObsidianVaults } from "./paths/obsidian.ts";
 export type { ObsidianVault } from "./paths/obsidian.ts";
 export type { Clock } from "./ports/clock.ts";

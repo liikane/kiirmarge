@@ -135,6 +135,18 @@ Kinnitusvaate ajal peidab **Esc** akna kohe.
 3. Kõik märkmed kogunevad samasse faili kronoloogiliselt — hea, kui tahad päeva jooksul ühte
    voogu kirjutada.
 
+### Näide 4 — märge läheb korraga faili ja GitHubi Issue'ks
+
+1. ⚙ → **Saada märge ka GitHubi Issue'na** → **hoidla** `liikane/kiirmarge` → **vaikimisi silt**
+   (nt „Ettepanek“) → kleebi **GitHubi token** ja vajuta **Salvesta võti** → **Testi ühendust**
+   (peab ütlema „OK: … Issues: loomise õigus on olemas“) → „Salvesta seaded“.
+2. Ava kiirmärge, kirjuta nt „Parandada kiirklahv pärast unerežiimi“ ja vali märkeruudu kõrval
+   tüübiks „Viga“.
+3. **Enter** — märkmefail salvestatakse kohe (nagu alati); kui Issue saab loodud, lisandub faili
+   lõppu rida `GitHub: [#12](…)` ja aken näitab Issue linki.
+4. Kui võrku pole või GitHub vastab 5xx/piiranguga, jääb saatmine **järjekorda** (`github-queue.json`
+   seadistuse kõrval) ja proovitakse uuesti järgmisel käivitusel või seadete salvestamisel.
+
 ## 6. Seaded
 
 ### 6.1 Rakenduses (⚙)
@@ -153,6 +165,10 @@ Kinnitusvaate ajal peidab **Esc** akna kohe.
 | Sulgemise klahv | vaikimisi `Esc` |
 | Käivita arvuti käivitamisel | autostart |
 | Pärast salvestamist | aken jääb avatuks või 5 s kinnitus |
+| Saada märge ka GitHubi Issue'na | lülitab GitHubi välja ja märkeruudu märkmeaknas sisse |
+| GitHubi hoidla | `omanik/nimi`, nt `liikane/kiirmarge` |
+| Vaikimisi silt | `bug` / `idea` / `enhancement` / `documentation` |
+| GitHubi token | salvestatakse **Windowsi mandaadihoidlasse**, mitte `config.toml`-i |
 
 ### 6.2 Käsitsi (`config.toml`)
 
@@ -197,6 +213,21 @@ Märkme sisu:
 <sinu tekst>
 ```
 
+### 6.4 GitHubi token ja õigused
+
+Issue'de loomiseks on vaja GitHubi pääsuvõtit (PAT). Piisab ühest hoidlast ja ühest õigusest:
+
+1. GitHubis **Settings → Developer settings → Personal access tokens → Fine-grained tokens**
+   → „Generate new token".
+2. **Repository access**: ainult see hoidla (nt `liikane/kiirmarge`).
+3. **Permissions → Repository permissions → Issues: Read and write**.
+4. Kopeeri token (seda näidatakse ainult korra) → rakenduses ⚙ → väli **GitHubi token**
+   → **Salvesta võti**.
+5. **Testi ühendust** ütleb, kas hoidla on nähtav ja kas Issue'de loomise õigus on olemas.
+
+Token hoitakse **Windowsi mandaadihoidlas** (kirje `Kiirmarge`), mitte `config.toml`-is ega
+märkmetes. **Kustuta võti** eemaldab selle sealt.
+
 ## 7. Tõrkeotsing
 
 | Sümptom | Põhjus ja lahendus |
@@ -209,6 +240,12 @@ Märkme sisu:
 | `cargo build` viskab linkimisvea | MSVC Build Tools puudub → `winget install Microsoft.VisualStudio.2022.BuildTools` (VC.Tools + Windows SDK) |
 | `LNK1104: cannot open file ...target\debug\build\...` | tee liiga pikk → `apps/desktop/src-tauri/.cargo/config.toml` (`target-dir = "C:/kt/memilla"`) |
 | Märge ei salvestu | vaata akna all olevat veateadet; tee peab olema absoluutne ja kirjutatav |
+| „GitHubi pääsuvõti puudub" | võti pole salvestatud → ⚙ → väli „GitHubi token" → **Salvesta võti** |
+| „GitHubi pääsuvõti on kehtetu või aegunud" | token on tühistatud või muudetud → loo uus ja salvesta |
+| „Hoidlat ei leitud või … puudub ligipääs" | hoidla nimi vale või tokenil pole selle repo jaoks õigust |
+| „… puudub õigus … Issues: write" | lisa tokenile õigus **Issues: Read and write** |
+| „GitHub ei võtnud Issue't vastu" (422) | nt silt puudub hoidlas → loo silt (`bug`, `idea`, …) või vali olemasolev |
+| „GitHubi päringupiir on täis" | oota piirangu lõpuni; märge on järjekorras ja läheb ise edasi |
 
 ## 8. Arendajale
 
@@ -222,7 +259,7 @@ Märkme sisu:
 Kontrollid:
 
 ```powershell
-npm test                # core: 89 testi
+npm test                # core: 109 testi
 npm run typecheck       # core + desktop
 cd apps/desktop/src-tauri; cargo test   # 6 testi
 ```

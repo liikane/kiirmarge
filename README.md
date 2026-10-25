@@ -15,6 +15,9 @@ märkme Markdown-failina. Installerit ei ole vaja — rakendus on üks exe, sead
   Windowsilt (known folder), seega töötab ka siis, kui töölaud on OneDrive'i suunatud.
 - **Klahvispikker nuppudel**: „Salvesta" ja „Tühista" näitavad kehtivat klahvi (`Enter`/`Esc`)
   ja see uueneb koos seadetega.
+- **GitHubi Issue (valikuline)**: märkeruut „Saada ka GitHub Issue" — märge salvestub faili ja läheb
+  lisaks Issue'ks valitud hoidlas (silt bug/idea/enhancement/documentation). Pääsuvõti on Windowsi
+  mandaadihoidlas; võrguühenduseta saatmine jääb järjekorda ja läheb hiljem ise edasi.
 - **Portatiivne seadistus**: `config.toml` exe kõrval; kui kaust on kirjutuskaitstud, siis
   `%APPDATA%\Kiirmarge\config.toml`.
 - Märkmed: Markdown, vaikimisi `# Kiirmärge` + ajatempel + tekst (või kõik ühes liitfailis).
@@ -49,7 +52,7 @@ npm run tauri --workspace @kiirmarge/desktop -- build --debug --no-bundle
 ## Testid
 
 ```powershell
-npm test                # core: 89 testi (node --test)
+npm test                # core: 109 testi (node --test)
 npm run typecheck       # core + desktop (tsc --noEmit)
 cd apps/desktop/src-tauri; cargo test   # 6 testi (Rust: failiteed, liitfail)
 ```

@@ -7,6 +7,8 @@ use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}
 use tauri::{AppHandle, Manager, WebviewWindow};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 
+mod github;
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct AppPaths {
@@ -56,7 +58,7 @@ fn config_dir(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(roaming.join("Kiirmarge"))
 }
 
-fn config_file(app: &AppHandle) -> Result<PathBuf, String> {
+pub(crate) fn config_file(app: &AppHandle) -> Result<PathBuf, String> {
     if let Some(path) = portable_config_file() {
         return Ok(path);
     }
@@ -353,7 +355,14 @@ pub fn run() {
             show_main_window,
             hide_main_window,
             set_always_on_top,
-            sync_autostart
+            sync_autostart,
+            github::github_token_status,
+            github::github_save_token,
+            github::github_clear_token,
+            github::github_test,
+            github::github_create_issue,
+            github::queue_load,
+            github::queue_save
         ])
         .run(tauri::generate_context!())
         .expect("rakenduse käivitamine ebaõnnestus");

@@ -292,6 +292,38 @@ body {
   font-size: 13px;
 }
 
+/* GitHubi Issue rida märkmeaknas */
+.note__github {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.input--inline {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+.saved__github {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.saved__github[data-tone="ok"],
+.settings__hint[data-tone="ok"] {
+  color: var(--ok);
+}
+
+.saved__github[data-tone="error"],
+.settings__hint[data-tone="error"] {
+  color: var(--error);
+}
+
 .settings__actions {
   display: flex;
   justify-content: flex-end;
