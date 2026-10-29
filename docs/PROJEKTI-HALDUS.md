@@ -104,3 +104,59 @@ Hoidla `liikane/kiirmarge` on avalik. Selle Issue-kirjed ja vormidesse
 sisestatud sisu on samuti avalik. Konfidentsiaalne planeerimine toimub
 **privaatse Projectsi Draft issue** kirjetes või eraldi privaatses hoidlas.
 Ajakulu automaatika ei kopeeri privaatset sisu avalikku hoidlasse.
+
+
+## Operoni mõõdetud tööaja sünkroonimine
+
+**Eesmärk:** Operoni TrackTime/FlowTime lõpetatud tööseansside kestus
+kuvatakse GitHub Projects V2 väljal **Actual hours**.
+Hinnanguline tööaeg jääb eraldi väljale **Estimated hours (auto)**.
+
+Skript: **scripts/sync-operon-actual-time.mjs**.
+
+- Operon salvestab lõpetatud seansi pikkuse ülesande Markdowni väljale **duration** (sekundites).
+- Sünkroonija loeb ainult operonId, duration, links ja githubIssue välju.
+- Sama GitHub Issue juurde seotud eri ülesannete mõõdetud ajad liidetakse; korduvaid operonId-sid ei loeta topelt.
+- Käimasolevat taimerit arvesse ei võeta; sünkroonitakse üksnes lõpetatud seansside kestus.
+- GitHubi saadetakse ainult Issue number ja tundide summa, mitte Obsidiani märkmete sisu.
+- Kui ühel ülesandel on mitu erinevat Issue seost, seda ülesannet arvestusse ei lisata.
+- Ainult avaliku hoidla Issue-projektiüksused; privaatseid Draft issue kirjeid see sünkroonija ei muuda.
+
+### Operoni ülesande sidumine
+
+Ava Operonis vastav ülesanne ning lisa selle **Links** väljale näiteks
+https://github.com/liikane/kiirmarge/issues/7. Alternatiivina saab
+kohandatud tekstiväljal **githubIssue** kasutada väärtust 7.
+Ühe ajamõõtmise ülesande kohta on üks Issue seos.
+
+**Ära muuda käsitsi** operonId, duration ega trackers väärtusi.
+Käivita Operonis TrackTime, tee töö ja peata taimer; uus kestus
+salvestatakse siis ülesandele.
+
+### Käivitamine
+
+PowerShelli näide arvutis, kus asub Obsidiani vault:
+
+~~~powershell
+$env:OPERON_VAULT = 'C:\Users\lauri\Portable\!Obs\Lauri_2026'
+$env:OPERON_TIME_DIRS = 'Operon/Tasks'
+node scripts/sync-operon-actual-time.mjs
+~~~
+
+Vaikimisi on see kuivkäivitus ehk GitHubi andmeid ei muudeta.
+
+Kirjutamise aktiveerimiseks:
+1. Kinnita, et GitHub Project on Private. Leia selle number ja lisa projekti Number-väli **Actual hours**.
+2. Määra KIIRMARGE_PROJECT_NUMBER keskkonnamuutuja või Lauridelli kohalikus sünkroonimiskaustas fail project-number.txt, milles on ainult projektinumber.
+3. Autendi GitHub CLI (gh auth login -s project või gh auth refresh -s project), mis küsib kasutaja kinnitust. Alternatiivina anna KIIRMARGE_PROJECT_TOKEN turvalise keskkonnamuutujana, mitte avaliku faili sees.
+4. Käivita skript lipuga --apply ning kinnita, et õige Issue Actual hours väärtus muutub.
+
+**Lauridellis** paiknevad käiviti ja skripti koopia kaustas
+C:\Users\lauri\Portable\Kiirmarge\OperonSync; logi on sync.log.
+Windows Task Scheduleris on ülesanne **Kiirmarge Operon Actual Time**
+15-minutilise intervalliga, kui kasutaja on sisse loginud.
+Kui projektinumber või Projectsi autentimine puudub, töötab üksnes kuivkäivitus.
+
+Operoni CLI pole vajalik, sest Operoni Markdown on mõõdetud aja
+tõeallikas. Teistes arvutites mõõdetud aeg peab sünkroonima Obsidiani
+Markdowni kaudu Lauridelli, et seda üle kanda.
