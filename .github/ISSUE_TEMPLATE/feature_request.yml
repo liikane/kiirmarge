@@ -1,0 +1,25 @@
+name: Arendusettepanek
+description: Paku uut funktsiooni või täiustust (avalik Issue).
+title: "[Ettepanek] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: "Avalik teade. Privaatse arendusplaani jaoks kasuta eraldi privaatse Projectsi Draft issue kirjet."
+  - type: textarea
+    id: problem
+    attributes:
+      label: Millist probleemi lahendab?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Soovitud lahendus
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatiivid või lisainfo
