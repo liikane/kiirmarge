@@ -1,0 +1,26 @@
+name: Juhendi täiendus
+description: Paku kasutus- või paigaldusjuhendi täiendust (avalik Issue).
+title: "[Juhend] "
+labels:
+  - documentation
+body:
+  - type: markdown
+    attributes:
+      value: "See Issue on avalik. Ära lisa sisemist ega konfidentsiaalset dokumentatsiooni."
+  - type: input
+    id: section
+    attributes:
+      label: Juhendi osa
+      placeholder: nt paigaldus, seaded, kasutusnäited
+    validations:
+      required: true
+  - type: textarea
+    id: task
+    attributes:
+      label: Mida on vaja kirjutada või muuta?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Valmimise tingimused
