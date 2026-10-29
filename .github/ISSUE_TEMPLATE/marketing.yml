@@ -1,0 +1,23 @@
+name: Avalik turundusettepanek
+description: Paku reklaami, tutvustuse või levitamise ideed (avalik Issue).
+title: "[Turundus] "
+body:
+  - type: markdown
+    attributes:
+      value: "Ära lisa siia privaatseid kampaaniaplaane ega eelarveid. Need jäävad privaatsesse projekti Draft issue kirjetena."
+  - type: textarea
+    id: goal
+    attributes:
+      label: Eesmärk ja sihtrühm
+    validations:
+      required: true
+  - type: textarea
+    id: activity
+    attributes:
+      label: Tegevus ja soovitud tulemus
+    validations:
+      required: true
+  - type: textarea
+    id: resources
+    attributes:
+      label: Vahendid ja lisainfo
