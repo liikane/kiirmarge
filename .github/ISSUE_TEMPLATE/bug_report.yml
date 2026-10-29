@@ -1,0 +1,48 @@
+name: Veateade
+description: Teata Kiirmärke veast (avalik Issue).
+title: "[Viga] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: "See Issue on avalik. Ära lisa paroole, privaatseid märkmeid, isikuandmeid ega juurdepääsuandmeid."
+  - type: input
+    id: version
+    attributes:
+      label: Kiirmärke versioon
+      placeholder: nt arendusversioon või väljalaske number
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operatsioonisüsteem
+      options:
+        - Windows 11
+        - Windows 10
+        - Muu
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Kuidas viga korrata?
+      placeholder: "1. Ava...\n2. Vajuta...\n3. Ilmneb..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Oodatud tulemus
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Tegelik tulemus
+    validations:
+      required: true
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Lisainfo ja ekraanipildid
+      description: Kontrolli enne lisamist, et pilt ei sisaldaks privaatset infot.
