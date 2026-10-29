@@ -1,0 +1,28 @@
+name: Kiirmärke ligikaudne ajakulu
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  estimated-time:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Kontrolli JavaScripti süntaksit
+        run: node --check scripts/sync-project-time.mjs
+      - name: Uuenda projekti ligikaudset ajakulu
+        env:
+          KIIRMARGE_PROJECT_OWNER: liikane
+          KIIRMARGE_PROJECT_NUMBER: ${{ vars.KIIRMARGE_PROJECT_NUMBER }}
+          KIIRMARGE_PROJECT_TOKEN: ${{ secrets.KIIRMARGE_PROJECT_TOKEN }}
+        run: node scripts/sync-project-time.mjs
