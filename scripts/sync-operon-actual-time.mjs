@@ -11,23 +11,26 @@ const owner=process.env.KIIRMARGE_PROJECT_OWNER || 'liikane';
 const fieldName=process.env.KIIRMARGE_ACTUAL_FIELD || 'Actual hours';
 if(!vault) throw new Error('OPERON_VAULT must point to the Obsidian vault');
 if(apply && (!Number.isInteger(number) || number<1)) throw new Error('Set KIIRMARGE_PROJECT_NUMBER');
-const issuePattern=/https:\/\/github\.com\/liikane\/kiirmarge\/issues\/(\d+)(?!\d)/gi;
+const repository=process.env.OPERON_GITHUB_REPOSITORY || 'liikane/kiirmarge';
+const issuePattern=/https:\/\/github\.com\/([^/\s]+\/[^/\s]+)\/issues\/(\d+)(?!\d)/gi;
 function ids(m) {
   const out=new Set();
   const explicit=String(m.githubIssue||m.github_issue||'').trim();
-  if(/^#?\d+$/.test(explicit)) out.add(Number(explicit.replace('#','')));
+  if(repository==='liikane/kiirmarge' && /^#?\d+$/.test(explicit)) out.add(Number(explicit.replace('#','')));
+  const projectItem=String(m.githubProjectItem||'').trim();
+  if(/^PVTI_[A-Za-z0-9_-]+$/.test(projectItem))out.add(projectItem);
   for(const str of [explicit,String(m.links||'')])
-    for(const match of str.matchAll(issuePattern)) out.add(Number(match[1]));
-  return [...out].filter(x=>Number.isSafeInteger(x)&&x>0);
+    for(const match of str.matchAll(issuePattern)) if(match[1]===repository)out.add(Number(match[2]));
+  return [...out].filter(x=>typeof x==='string'||(Number.isSafeInteger(x)&&x>0));
 }
 function records(src) {
   const out=[];
-  const front=src.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+  const front=src.replace(/^\uFEFF/,'').match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
   if(front) {
     const m={};let key='';
     for(const line of front[1].split(/\r?\n/)) {
       const root=line.match(/^([A-Za-z][\w-]*):(?:\s*(.*))?$/);
-      if(root){key=root[1];if(['operonId','duration','githubIssue','github_issue','links'].includes(key))m[key]=(root[2]||'').trim().replace(/^['"]|['"]$/g,'');}
+      if(root){key=root[1];if(['operonId','duration','githubIssue','github_issue','githubProjectItem','links'].includes(key))m[key]=(root[2]||'').trim().replace(/^['"]|['"]$/g,'');}
       else if(key==='links'&&/^\s+-\s+/.test(line))m.links=(m.links||'')+' '+line.replace(/^\s+-\s+/,'').trim().replace(/^['"]|['"]$/g,'');
     }
     out.push(m);
@@ -36,7 +39,7 @@ function records(src) {
     if(!/^\s*[-*]\s+\[[ xX]\]/.test(line))continue;
     const m={};
     for(const match of line.matchAll(/\{\{([\w-]+)::\s*([^}]*?)\}\}/g))
-      if(['operonId','duration','githubIssue','github_issue','links'].includes(match[1]))m[match[1]]=match[2].trim();
+      if(['operonId','duration','githubIssue','github_issue','githubProjectItem','links'].includes(match[1]))m[match[1]]=match[2].trim();
     out.push(m);
   }
   return out;
@@ -73,9 +76,9 @@ for(const rel of folderSpec.split(';').map(x=>x.trim()).filter(Boolean)) {
 }
 for(const {issue,seconds} of tasks.values())byIssue.set(issue,(byIssue.get(issue)||0)+seconds);
 console.log('Files:',totalFiles,'linked Operon tasks:',tasks.size,'Issues:',byIssue.size,'ambiguous:',ambiguous);
-for(const [n,sec] of [...byIssue].sort((a,b)=>a[0]-b[0]))console.log('Issue #'+n+': '+(sec/3600).toFixed(2)+' h');
+for(const [n,sec] of [...byIssue].sort((a,b)=>String(a[0]).localeCompare(String(b[0]))))console.log('Issue #'+n+': '+(sec/3600).toFixed(2)+' h');
 if(!apply){console.log('Dry-run; no changes.');process.exit(0);}
-if(!byIssue.size){console.log('No tracked linked tasks; nothing to update.');process.exit(0);}
+// Validate project access and field even when there are no linked tasks.
 let token=process.env.KIIRMARGE_PROJECT_TOKEN||process.env.GH_TOKEN;
 if(!token) {
   const gh=spawnSync('gh',['auth','token'],{encoding:'utf8',windowsHide:true,timeout:10000});
@@ -109,14 +112,25 @@ do{
   const field=project.fields.nodes.find(f=>f?.name===fieldName&&f.dataType==='NUMBER');
   if(!field)throw new Error('Missing NUMBER project field: '+fieldName);
   for(const item of project.items.nodes){
-    if(item.content?.repository?.nameWithOwner!=='liikane/kiirmarge')continue;
-    if(!byIssue.has(item.content.number))continue;
+    const key=byIssue.has(item.id)?item.id:(item.content?.repository?.nameWithOwner===repository?item.content.number:null);
+    if(!byIssue.has(key))continue;
     matched++;
-    const hours=Math.round(byIssue.get(item.content.number)/36)/100;
+    const hours=Math.round(byIssue.get(key)/36)/100;
     const old=item.fieldValues.nodes.find(v=>v?.field?.name===fieldName)?.number;
-    if(typeof old==='number'&&Math.abs(old-hours)<0.005)continue;
-    await gql(writeMutation,{project:project.id,item:item.id,field:field.id,value:hours});
-    updated++;
+    if(!(typeof old==='number'&&Math.abs(old-hours)<0.005)){
+      await gql(writeMutation,{project:project.id,item:item.id,field:field.id,value:hours});
+      updated++;
+    }
+    if(process.env.OPERON_COMPARE_ESTIMATE==='1'){
+      const varianceField=project.fields.nodes.find(f=>f?.name==='Variance (h)'&&f.dataType==='NUMBER');
+      if(!varianceField)throw new Error('Missing NUMBER field: Variance (h)');
+      const estimate=item.fieldValues.nodes.find(v=>v?.field?.name==='Estimate (h)')?.number;
+      if(typeof estimate==='number'){
+        const variance=Math.round((hours-estimate)*100)/100;
+        const previous=item.fieldValues.nodes.find(v=>v?.field?.name==='Variance (h)')?.number;
+        if(typeof previous!=='number'||Math.abs(previous-variance)>=0.005)await gql(writeMutation,{project:project.id,item:item.id,field:varianceField.id,value:variance});
+      }
+    }
   }
   cursor=project.items.pageInfo.hasNextPage?project.items.pageInfo.endCursor:null;
 }while(cursor);
