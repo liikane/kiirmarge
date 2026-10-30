@@ -154,7 +154,7 @@ Kirjutamise aktiveerimiseks:
 **Lauridellis** paiknevad käiviti ja skripti koopia kaustas
 C:\Users\lauri\Portable\Kiirmarge\OperonSync; logi on sync.log.
 Windows Task Scheduleris on ülesanne **Kiirmarge Operon Actual Time**
-15-minutilise intervalliga, kui kasutaja on sisse loginud.
+tunnise intervalliga, kui kasutaja on sisse loginud.
 Kui projektinumber või Projectsi autentimine puudub, töötab üksnes kuivkäivitus.
 
 Operoni CLI pole vajalik, sest Operoni Markdown on mõõdetud aja
