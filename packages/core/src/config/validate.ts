@@ -6,7 +6,7 @@ import type { AfterSave, IssueLabel, LinkStyle, Mode, NoteMode, Theme } from "./
 export const THEMES: readonly Theme[] = ["dark", "light", "system"];
 export const MODES: readonly Mode[] = ["standalone", "obsidian"];
 export const LINK_STYLES: readonly LinkStyle[] = ["auto", "wiki", "markdown"];
-export const NOTE_MODES: readonly NoteMode[] = ["per-note", "single-file"];
+export const NOTE_MODES: readonly NoteMode[] = ["per-note", "single-file", "daily-note"];
 export const AFTER_SAVE: readonly AfterSave[] = ["stay", "confirm"];
 export const ISSUE_LABELS: readonly IssueLabel[] = ["bug", "idea", "enhancement", "documentation"];
 

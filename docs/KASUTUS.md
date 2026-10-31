@@ -91,6 +91,7 @@ muudad seadetes salvestamise või sulgemise klahvi.
 |------|---------|
 | **Üks fail iga märkme kohta** (vaikimisi) | `2026-10-25-091500.md` — iga märge omaette failis; kui sama sekund kordub, lisandub `-2` |
 | **Kõik märkmed ühes failis** | kõik läheb ühte `Kiirmärkmed.md`-sse, iga märge eraldatud `---`-ga; pealkirja ei korrata |
+| **Obsidiani päevamärge** (`daily-note`; ainult režiimis „Obsidiani vault“) | tänane `YYYY-MM-DD.md` vaulti märkmete kaustas; iga mõte lisatakse lõppu ülesandena `- [ ] <märkus>`. Fail luuakse, kui seda pole. Nii saab mõtte hiljem tegevuseks muuta või tehtuks märkida |
 
 ### 4.3 Märkeruudud ja loendur
 
@@ -157,7 +158,7 @@ Kinnitusvaate ajal peidab **Esc** akna kohe.
 | Obsidiani vault | vaulti valik (loetelu tuvastatakse Obsidiani seadistusest, saab ka käsitsi valida) |
 | **Salvestuskoht** | `Dokumendid` · `Töölaud` · `Kohandatud kaust`; all kuvatakse lahendatud tee |
 | Märkmete kaust | Dokumendid/Töölaud: suhteline nimi; Kohandatud: täistee („Vali…") |
-| Salvestamise viis | üks fail märkme kohta või kõik ühes failis |
+| Salvestamise viis | üks fail märkme kohta, kõik ühes failis või Obsidiani päevamärge |
 | Liitfaili nimi | liitfaili nimi (nt `Kiirmärkmed.md`) |
 | Lingistiil | automaatne / wiki `[[…]]` / Markdown `[…](…)` |
 | Kiirklahv akna avamiseks | globaalne kiirklahv (vaikimisi `Ctrl+Shift+1`) |
@@ -184,7 +185,7 @@ uuesti, kommentaarid säilivad).
 | `general.autostart` | `true` = käivita Windowsi sisselogimisel |
 | `storage.notes_dir` | suhteline nimi (Dokumendid/töölaud/vault) või täistee |
 | `storage.default_to_desktop` | `true` = märkmed töölauale alamkausta; **eraldiseisvas režiimis** (Obsidiani vault on määrav) |
-| `storage.note_mode` | `per-note` = iga märge eraldi faili; `single-file` = kõik ühte |
+| `storage.note_mode` | `per-note` = iga märge eraldi faili; `single-file` = kõik ühte; `daily-note` = tänane Obsidiani päevamärge ülesandena |
 | `storage.single_file` | liitfaili nimi, kui `note_mode = "single-file"` |
 | `storage.filename_format` | failinime mall, vaikimisi `YYYY-MM-DD-HHmmss.md` |
 | `hotkeys.open` | globaalne kiirklahv (peab olema muuteklahviga) |

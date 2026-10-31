@@ -31,7 +31,7 @@ export function serializeConfig(config: KiirmargeConfig): string {
     `link_style = ${quote(storage.link_style)}        # "auto" | "wiki" (![[..]]) | "markdown"`,
     `filename_format = ${quote(storage.filename_format)}`,
     `datetime_format = ${quote(storage.datetime_format)}`,
-    `note_mode = ${quote(storage.note_mode)}     # "per-note" = iga märge eraldi, "single-file" = kõik ühte`,
+    `note_mode = ${quote(storage.note_mode)}     # "per-note" = eraldi fail, "single-file" = liitfail, "daily-note" = Obsidiani päevamärge`,
     `single_file = ${quote(storage.single_file)}  # liitfaili nimi, kui note_mode = "single-file"`,
     "",
     "[hotkeys]",
