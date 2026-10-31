@@ -65,6 +65,13 @@ export type {
   IssueFailure,
   QueuedSendResult,
 } from "./usecases/create-issue.ts";
+export {
+  applyLinkSuggestion,
+  isEmptySuggestion,
+  LINKS_HEADING,
+  suggestByKeywords,
+} from "./linking/suggest.ts";
+export type { LinkSuggestion, Linker, VaultEntry } from "./linking/suggest.ts";
 export { parseObsidianVaults } from "./paths/obsidian.ts";
 export type { ObsidianVault } from "./paths/obsidian.ts";
 export type { Clock } from "./ports/clock.ts";

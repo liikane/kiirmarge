@@ -79,12 +79,14 @@ const locationSelect = must<HTMLSelectElement>("#location");
 const locationRow = must<HTMLElement>("#location-row");
 const pickDirButton = must<HTMLButtonElement>("#pick-dir");
 const noteModeSelect = must<HTMLSelectElement>("#note-mode");
+const dailyNoteModeOption = must<HTMLOptionElement>("#daily-note-mode");
 const singleFileRow = must<HTMLElement>("#single-file-row");
 const singleFileInput = must<HTMLInputElement>("#single-file");
 const hotkeyOpenInput = must<HTMLInputElement>("#hotkey-open");
 const hotkeySaveInput = must<HTMLInputElement>("#hotkey-save");
 const hotkeyCloseInput = must<HTMLInputElement>("#hotkey-close");
 const autostartCheckbox = must<HTMLInputElement>("#autostart");
+const configStorageSelect = must<HTMLSelectElement>("#config-storage");
 const afterSaveSelect = must<HTMLSelectElement>("#after-save");
 const saveSettingsButton = must<HTMLButtonElement>("#save-settings");
 const checkboxButton = must<HTMLButtonElement>("#checkbox");
@@ -637,6 +639,9 @@ function renderSettings(current: KiirmargeConfig): void {
   hotkeySaveInput.value = current.hotkeys.save;
   hotkeyCloseInput.value = current.hotkeys.close;
   autostartCheckbox.checked = current.general.autostart;
+  void invoke<string>("get_config_storage").then((value) => {
+    configStorageSelect.value = value === "registry" ? "registry" : "file";
+  });
   afterSaveSelect.value = current.general.after_save;
   singleFileRow.hidden = current.storage.note_mode !== "single-file";
   renderGithub();
@@ -687,7 +692,12 @@ async function saveSettings(): Promise<void> {
   next.storage.notes_dir = notesDirInput.value.trim();
   const location = locationSelect.value as Location;
   next.storage.default_to_desktop = location === "desktop";
-  next.storage.note_mode = noteModeSelect.value === "single-file" ? "single-file" : "per-note";
+  next.storage.note_mode =
+    noteModeSelect.value === "daily-note"
+      ? "daily-note"
+      : noteModeSelect.value === "single-file"
+        ? "single-file"
+        : "per-note";
   next.storage.single_file = singleFileInput.value.trim();
   next.general.autostart = autostartCheckbox.checked;
   next.general.after_save = afterSaveSelect.value === "confirm" ? "confirm" : "stay";
@@ -736,6 +746,10 @@ async function saveSettings(): Promise<void> {
       return;
     }
   }
+  if (next.storage.note_mode === "daily-note" && mode !== "obsidian") {
+    setStatus("Päevamärkme režiim töötab ainult Obsidiani vaultis.", "error");
+    return;
+  }
   if (next.storage.note_mode === "single-file") {
     const problem = singleFileError(next.storage.single_file);
     if (problem !== null) {
@@ -783,6 +797,9 @@ async function saveSettings(): Promise<void> {
 
   try {
     await invoke<void>("write_config", { text: serializeConfig(next) });
+    await invoke<void>("set_config_storage", {
+      mode: configStorageSelect.value === "registry" ? "registry" : "file",
+    });
     config = next;
     notesDir = resolveNotesDir(next, basePaths);
     saveHotkey = parseHotkey(next.hotkeys.save);

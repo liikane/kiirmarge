@@ -1,5 +1,7 @@
 # Kiirmärge
 
+> English: [`README.en.md`](README.en.md) · [`docs/USAGE.en.md`](docs/USAGE.en.md)
+
 Portatiivne kiirmärkme rakendus Windowsile: globaalne kiirklahv avab väikese akna, **Enter** salvestab
 märkme Markdown-failina. Installerit ei ole vaja — rakendus on üks exe, seadistus elab selle kõrval.
 

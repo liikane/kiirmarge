@@ -37,6 +37,7 @@ test("singleFileError", () => {
   assert.notEqual(singleFileError("alam/märkmed.md"), null);
   assert.notEqual(singleFileError("..\\märkmed.md"), null);
   assert.equal(isNoteMode("single-file"), true);
+  assert.equal(isNoteMode("daily-note"), true);
   assert.equal(isNoteMode("kokku"), false);
 });
 

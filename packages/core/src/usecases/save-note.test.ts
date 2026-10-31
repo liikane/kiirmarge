@@ -109,3 +109,44 @@ test("single-file: teine märge lisatakse lõppu, pealkirja ei korrata", async (
   assert.equal(noteStore.writes[0]?.append, true);
   assert.equal(noteStore.contents.get("Kiirmärkmed.md"), "varasem\n\n---\n\n## 2026-07-14 20:31\n\nTeine\n");
 });
+
+test("daily-note: loob tänase päevaülesande ja lisab olemasolevasse faili", async () => {
+  const config = cloneConfig(DEFAULT_CONFIG);
+  config.general.mode = "obsidian";
+  config.storage.note_mode = "daily-note";
+  const noteStore = fakeNoteStore({ existing: ["2026-07-14.md"] });
+
+  const result = await saveNote("Esimene rida\nJätk", { clock: fixedClock(), noteStore, config });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.filename, "2026-07-14.md");
+  assert.equal(result.content, "\n- [ ] Esimene rida\n  Jätk\n");
+  assert.equal(noteStore.writes[0]?.append, true);
+  assert.equal(noteStore.contents.get("2026-07-14.md"), "varasem\n\n- [ ] Esimene rida\n  Jätk\n");
+});
+
+test("daily-note: puuduva päevamärkme loomisel kirjutab märkeruudu", async () => {
+  const config = cloneConfig(DEFAULT_CONFIG);
+  config.general.mode = "obsidian";
+  config.storage.note_mode = "daily-note";
+  const noteStore = fakeNoteStore();
+
+  const result = await saveNote("Uus idee", { clock: fixedClock(), noteStore, config });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.filename, "2026-07-14.md");
+  assert.equal(result.content, "- [ ] Uus idee\n");
+  assert.equal(noteStore.writes[0]?.append, false);
+});
+
+test("daily-note: eraldiseisvas režiimis salvestamisest keeldutakse", async () => {
+  const config = cloneConfig(DEFAULT_CONFIG);
+  config.storage.note_mode = "daily-note";
+  const noteStore = fakeNoteStore();
+
+  const result = await saveNote("Uus idee", { clock: fixedClock(), noteStore, config });
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.match(result.error, /ainult Obsidiani vaultis/);
+  assert.equal(noteStore.writes.length, 0);
+});
