@@ -86,6 +86,7 @@ const hotkeyOpenInput = must<HTMLInputElement>("#hotkey-open");
 const hotkeySaveInput = must<HTMLInputElement>("#hotkey-save");
 const hotkeyCloseInput = must<HTMLInputElement>("#hotkey-close");
 const autostartCheckbox = must<HTMLInputElement>("#autostart");
+const configStorageSelect = must<HTMLSelectElement>("#config-storage");
 const afterSaveSelect = must<HTMLSelectElement>("#after-save");
 const saveSettingsButton = must<HTMLButtonElement>("#save-settings");
 const checkboxButton = must<HTMLButtonElement>("#checkbox");
@@ -638,6 +639,9 @@ function renderSettings(current: KiirmargeConfig): void {
   hotkeySaveInput.value = current.hotkeys.save;
   hotkeyCloseInput.value = current.hotkeys.close;
   autostartCheckbox.checked = current.general.autostart;
+  void invoke<string>("get_config_storage").then((value) => {
+    configStorageSelect.value = value === "registry" ? "registry" : "file";
+  });
   afterSaveSelect.value = current.general.after_save;
   singleFileRow.hidden = current.storage.note_mode !== "single-file";
   renderGithub();
@@ -793,6 +797,9 @@ async function saveSettings(): Promise<void> {
 
   try {
     await invoke<void>("write_config", { text: serializeConfig(next) });
+    await invoke<void>("set_config_storage", {
+      mode: configStorageSelect.value === "registry" ? "registry" : "file",
+    });
     config = next;
     notesDir = resolveNotesDir(next, basePaths);
     saveHotkey = parseHotkey(next.hotkeys.save);

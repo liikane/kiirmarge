@@ -167,6 +167,7 @@ During the confirmation view, **Esc** hides the window immediately.
 | Save key | default `Enter` (`Ctrl+Enter` always stays a line break) |
 | Close key | default `Esc` |
 | Start when the computer starts | autostart |
+| Configuration storage | `File in the same folder` (default) or `Windows registry` (`HKCU\Software\Kiirmarge`); the configuration is migrated when you switch |
 | After saving | window stays open or 5 s confirmation |
 | Also send the note as a GitHub Issue | turns GitHub on and shows the checkbox in the note window |
 | GitHub repository | `owner/name`, e.g. `liikane/kiirmarge` |

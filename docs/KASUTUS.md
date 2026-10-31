@@ -167,6 +167,7 @@ Kinnitusvaate ajal peidab **Esc** akna kohe.
 | Salvestamise klahv | vaikimisi `Enter` (`Ctrl+Enter` jääb alati reavahetuseks) |
 | Sulgemise klahv | vaikimisi `Esc` |
 | Käivita arvuti käivitamisel | autostart |
+| Seadistuse hoiukoht | `Fail samas kaustas` (vaikimisi) või `Windowsi register` (`HKCU\Software\Kiirmarge`); valikul kolitakse seadistus |
 | Pärast salvestamist | aken jääb avatuks või 5 s kinnitus |
 | Saada märge ka GitHubi Issue'na | lülitab GitHubi välja ja märkeruudu märkmeaknas sisse |
 | GitHubi hoidla | `omanik/nimi`, nt `liikane/kiirmarge` |

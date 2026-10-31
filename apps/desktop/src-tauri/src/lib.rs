@@ -8,6 +8,7 @@ use tauri::{AppHandle, Manager, WebviewWindow};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 
 mod github;
+mod registry_store;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -78,13 +79,24 @@ fn app_paths(app: AppHandle) -> Result<AppPaths, String> {
     Ok(AppPaths {
         documents: path_string(&documents),
         desktop: path_string(&desktop),
-        config_file: path_string(&config_file(&app)?),
+        config_file: if registry_store::is_enabled() {
+            r"Windowsi register (HKEY_CURRENT_USER\Software\Kiirmarge)".to_string()
+        } else {
+            path_string(&config_file(&app)?)
+        },
     })
 }
 
 #[tauri::command]
 fn read_config(app: AppHandle) -> Result<Option<String>, String> {
-    let path = config_file(&app)?;
+    if registry_store::is_enabled() {
+        return registry_store::read();
+    }
+    read_config_file(&app)
+}
+
+fn read_config_file(app: &AppHandle) -> Result<Option<String>, String> {
+    let path = config_file(app)?;
     match fs::read_to_string(&path) {
         Ok(text) => Ok(Some(text)),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
@@ -92,12 +104,8 @@ fn read_config(app: AppHandle) -> Result<Option<String>, String> {
     }
 }
 
-#[tauri::command]
-fn write_default_config(app: AppHandle, text: String) -> Result<(), String> {
-    let path = config_file(&app)?;
-    if path.exists() {
-        return Err("Seadistusfail on juba olemas — seda ei kirjutata üle.".to_string());
-    }
+fn write_config_file(app: &AppHandle, text: &str) -> Result<(), String> {
+    let path = config_file(app)?;
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)
             .map_err(|error| format!("Kausta loomine ebaõnnestus: {error}"))?;
@@ -106,6 +114,55 @@ fn write_default_config(app: AppHandle, text: String) -> Result<(), String> {
     fs::write(&temporary, text).map_err(|error| format!("Kirjutamine ebaõnnestus: {error}"))?;
     fs::rename(&temporary, &path)
         .map_err(|error| format!("Ümbernimetamine ebaõnnestus: {error}"))
+}
+
+/// Seadistuse hoiukoht: `file` (vaikimisi, samas kaustas) või `registry`.
+#[tauri::command]
+fn get_config_storage() -> &'static str {
+    if registry_store::is_enabled() {
+        "registry"
+    } else {
+        "file"
+    }
+}
+
+/// Vahetab hoiukohta ja kolib praeguse seadistuse uude kohta.
+#[tauri::command]
+fn set_config_storage(app: AppHandle, mode: String) -> Result<(), String> {
+    match mode.as_str() {
+        "registry" => {
+            if registry_store::is_enabled() {
+                return Ok(());
+            }
+            let current = read_config_file(&app)?;
+            registry_store::enable(current.as_deref())
+        }
+        "file" => {
+            if !registry_store::is_enabled() {
+                return Ok(());
+            }
+            if let Some(text) = registry_store::read()? {
+                write_config_file(&app, &text)?;
+            }
+            registry_store::disable()
+        }
+        _ => Err("Tundmatu seadistuse hoiukoht.".to_string()),
+    }
+}
+
+#[tauri::command]
+fn write_default_config(app: AppHandle, text: String) -> Result<(), String> {
+    if registry_store::is_enabled() {
+        if registry_store::read()?.is_some() {
+            return Err("Seadistus on juba olemas — seda ei kirjutata üle.".to_string());
+        }
+        return registry_store::write(&text);
+    }
+    let path = config_file(&app)?;
+    if path.exists() {
+        return Err("Seadistusfail on juba olemas — seda ei kirjutata üle.".to_string());
+    }
+    write_config_file(&app, &text)
 }
 
 /// Ainult turvalised failinimed: ilma teeeraldajateta ja ilma `..`.
@@ -179,15 +236,10 @@ fn save_note(
 /// Seadete salvestamine rakendusest (kirjutab config.toml uuesti, kommentaaridega).
 #[tauri::command]
 fn write_config(app: AppHandle, text: String) -> Result<(), String> {
-    let path = config_file(&app)?;
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)
-            .map_err(|error| format!("Kausta loomine ebaõnnestus: {error}"))?;
+    if registry_store::is_enabled() {
+        return registry_store::write(&text);
     }
-    let temporary = path.with_file_name("config.toml.tmp");
-    fs::write(&temporary, text).map_err(|error| format!("Kirjutamine ebaõnnestus: {error}"))?;
-    fs::rename(&temporary, &path)
-        .map_err(|error| format!("Ümbernimetamine ebaõnnestus: {error}"))
+    write_config_file(&app, &text)
 }
 
 /// Obsidiani seadistusfaili sisu (vaultide nimekiri). `None`, kui Obsidian pole paigaldatud.
@@ -346,6 +398,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             app_paths,
             read_config,
+            get_config_storage,
+            set_config_storage,
             write_default_config,
             note_exists,
             save_note,

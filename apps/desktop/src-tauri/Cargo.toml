@@ -26,6 +26,7 @@ serde_json = "1"
 # GitHubi Issue'd: HTTP + token Windowsi mandaadihoidlas (Credential Manager).
 ureq = { version = "2", features = ["json"] }
 keyring = { version = "3", features = ["windows-native"] }
+winreg = "0.55"
 
 [profile.dev]
 # Väiksem ehitustulemus — C: ketas on kitsas (täielik debug-info võttis ~7 GB).

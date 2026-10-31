@@ -45,7 +45,8 @@ Lõpptoote nõue on **installerita** rakendus. Sellest tuleneb:
 | Rakendus `Program Files`-is või võrgukettal | seadistus läheb `%APPDATA%\Kiirmarge\` |
 | Uuendamine | asenda ainult `kiirmarge.exe`; `config.toml` jääb alles |
 | Eemaldamine | kustuta kaust (kui autostart on sees, eemalda see enne või lülita rakenduses välja) |
-| Autostart | ainus jälg väljaspool kausta — üks registry-kirje (`HKCU`/`HKLM`\...\Run) |
+| Autostart | üks registry-kirje (`HKCU`/`HKLM`\...\Run) |
+| Seadistuse hoiukoht (valik) | seadetes „Seadistuse hoiukoht: Windowsi register" hoiab `config.toml` sisu registris `HKCU\Software\Kiirmarge` (`ConfigStorage=registry`, `Config`). Vaikimisi on **fail samas kaustas**. Valiku muutmisel kolitakse seadistus uude kohta; tagasi failile minnes registrikirjed kustutatakse. GitHubi järjekord (`github-queue.json`) jääb alati faili |
 
 ## 5. Kontrollitud (20.10.2026)
 
