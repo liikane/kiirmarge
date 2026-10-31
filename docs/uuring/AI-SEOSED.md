@@ -34,11 +34,23 @@ Markdown-faili sobivad `[[lingid]]`, sildid ja metaandmed. Valikuline (vaikimisi
    `ApiLinker` (pilv, teadliku nõusolekuga; token Windowsi mandaadihoidlas nagu GitHubi omal).
 3. **Töötlemine taustal:** salvestamine → järjekord (nagu `github-queue.json`) → linkimine hiljem; veaolukorras märge jääb muutmata.
 
+## Otsused (31.10.2026, kasutaja)
+
+1. **Pilve tohib märkmeid saata** — jah (teadliku valikuna seadetes; token mandaadihoidlas).
+2. **Sisu:** lingid + sildid ning võimaluse korral **metaandmed** (projekt, klient) frontmatterisse.
+3. **Käivitamine:** automaatne, aga **küsimisega** (pakkumine kinnitada/tagasi lükata) + käsitsi **„Seosta" nupp**.
+
+## Teostuse seis
+
+- Tehtud (core): `packages/core/src/linking/suggest.ts` — `VaultEntry`, `LinkSuggestion` (lingid, sildid, metadata),
+  `Linker` port (hilisemad AI-realisatsioonid), `suggestByKeywords` (eesti käänete lähendus), `applyLinkSuggestion`
+  (`## Seosed` plokk + frontmatter; ei dubleeri, ei kirjuta olemasolevat üle). 6 testi.
+- Järgmised sammud: (a) Rust-käsk vaulti kirjete (failinimed + sildid) lugemiseks; (b) UI: „Seosta" nupp ja
+  salvestusjärgne kinnitusküsimus (seade `linking.mode = off|ask|button`); (c) `ApiLinker` (pilv) metaandmete jaoks.
+
 ## Avatud otsused (vajavad sinult)
 
-1. Kas AI võib märkmeid pilve saata (B) või ainult kohalik (A) / reeglipõhine (C)?
-2. Kas lisada ainult lingid ja sildid, või ka metaandmed (projekt, klient, kuupäev) frontmatterisse?
-3. Kas vaikimisi automaatselt või ainult käsitsi („Seosta" nupp)?
+~~1. pilv?~~ ~~2. sisu?~~ ~~3. automaatne/nupp?~~ — otsustatud, vt üleval.
 
 ## Märkus eesti keele kohta
 
