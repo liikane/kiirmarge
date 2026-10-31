@@ -6,6 +6,8 @@ Kiirmärge on portatiivne Windowsi kiirmärkme rakendus: globaalne kiirklahv ava
 **Enter** salvestab märkme Markdown-failina. Installerit ei ole — rakendus on üks exe ja seadistus
 elab selle kõrval.
 
+> English version: [`USAGE.en.md`](USAGE.en.md) — hoia mõlemad sünkroonis.
+>
 > See juhend on mõeldud kasutajale. Arendusdetailid (arhitektuur, testid, ehitus) on peatükis 8
 > ja `docs/PLAAN.md`-s.
 
