@@ -57,6 +57,34 @@ npm run typecheck       # core + desktop (tsc --noEmit)
 cd apps/desktop/src-tauri; cargo test   # 6 testi (Rust: failiteed, liitfail)
 ```
 
+## Windowsi testbuildi kontrollimine ja avaldamine
+
+GitHubis vali **Actions → Windowsi kontrollitav build → Run workflow**. Töövoog käivitub
+ainult käsitsi, käivitab testid ning loob Tauri release-buildist unsigned portable
+`kiirmarge.exe` faili (installerit ei looda). Eduka käivituse artefakt sisaldab ainult EXE-faili,
+`build-info.txt` faili commit SHA ja versiooniga ning `SHA256SUMS.txt` kontrollsummaga.
+Artefakt on Actionsi käivituse lehel allalaaditav 7 päeva.
+
+Kontrolli allalaaditud artefakti PowerShellis samas kaustas:
+
+```powershell
+$expected = (Get-Content .\SHA256SUMS.txt).Split(' ')[0]
+$actual = (Get-FileHash .\kiirmarge.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) { throw 'SHA-256 kontroll ebaõnnestus' }
+Get-Content .\build-info.txt
+```
+
+Enne EXE käivitamist veendu, et `build-info.txt` commit SHA vastab soovitud lähtekoodi
+commitile. Artefakt on allkirjastamata ning Windows võib kuvada SmartScreeni hoiatuse.
+See build pole Windowsi GUI-test: kasutajaliidese ja päris Windowsi käitumise kontrollimiseks
+tuleb rakendust eraldi Windowsis katsetada. Build ega testid ei kasuta kasutaja märkmeid,
+paroole, `config.toml` faili ega Obsidiani vault'i; üles laetakse ainult eespool nimetatud
+kolm buildi väljundfaili.
+
+Kui soovid kontrollitud versiooni avaldada, loo see käsitsi GitHubi **Releases → Draft a new
+release** lehel ning lisa kontrollitud EXE koos `build-info.txt` ja `SHA256SUMS.txt` failidega.
+Töövoog ei loo GitHub Release'i ega avalda midagi automaatselt.
+
 ## Klahvid
 
 | Klahv | Mida teeb |
