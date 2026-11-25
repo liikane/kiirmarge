@@ -1,0 +1,80 @@
+name: Windowsi kontrollitav build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Vahemällu salvesta Cargo sõltuvused ja build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            apps/desktop/src-tauri/target
+          key: windows-cargo-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock', 'apps/desktop/src-tauri/Cargo.toml') }}
+
+      - name: Paigalda Node sõltuvused
+        run: npm ci
+
+      - name: Käivita testid
+        run: npm test
+
+      - name: Kontrolli TypeScripti tüüpe
+        run: npm run typecheck
+
+      - name: Käivita Rusti testid
+        run: cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+
+      - name: Ehita portable release EXE
+        run: npm run tauri --workspace @kiirmarge/desktop -- build --no-bundle
+
+      - name: Koosta kontrollitav artefakt
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = 'apps/desktop/src-tauri/target/release/kiirmarge.exe'
+          if (-not (Test-Path $exe)) {
+            throw "Tauri build ei loonud oodatud EXE-faili: $exe"
+          }
+
+          $output = 'artifact'
+          New-Item -ItemType Directory -Path $output | Out-Null
+          Copy-Item $exe (Join-Path $output 'kiirmarge.exe')
+          $version = (Get-Content 'apps/desktop/src-tauri/tauri.conf.json' -Raw | ConvertFrom-Json).version
+          $sha256 = (Get-FileHash (Join-Path $output 'kiirmarge.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$sha256  kiirmarge.exe" | Set-Content -Encoding ascii (Join-Path $output 'SHA256SUMS.txt')
+          @(
+            "Commit: $env:GITHUB_SHA"
+            "Version: $version"
+            "SHA-256: $sha256"
+            'Build: unsigned portable Windows x64 EXE; no installer'
+          ) | Set-Content -Encoding utf8 (Join-Path $output 'build-info.txt')
+
+      - name: Laadi artefakt üles
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiirmarge-windows-x64-${{ github.sha }}
+          path: artifact/
+          if-no-files-found: error
+          retention-days: 7
